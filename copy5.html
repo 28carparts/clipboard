@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Clipboard</title>
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            position: relative;
+        }
+        
+        .message-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .message-container {
+            position: relative;
+        }
+        
+        .message-actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .message-container:hover .message-actions {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .action-button {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .action-button:hover::before {
+            left: 100%;
+        }
+        
+        .primary-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .primary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+        
+        .primary-button:disabled {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .edit-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        
+        .edit-button:hover {
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+            transform: translateY(-1px);
+        }
+        
+        .delete-button {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+        
+        .delete-button:hover {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+            transform: translateY(-1px);
+        }
+        
+        .save-edit-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        .cancel-button {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+        }
+        
+        .input-field {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .copy-failed::after {
+            content: 'Copy Failed! ❌';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            margin-left: 8px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50%) translateX(-10px); }
+            to { opacity: 1; transform: translateY(-50%) translateX(0); }
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .floating-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            animation: notificationSlide 0.4s ease;
+            z-index: 1001;
+            font-weight: 500;
+        }
+        
+        @keyframes notificationSlide {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .counter-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .scrollbar-custom {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
+        
+        .title-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass-card p-8 rounded-3xl w-full" style="max-width: 1680px;">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Column 1: Input Section -->
+            <div class="space-y-6">
+                <div class="text-center">
+                    <h1 class="text-3xl title-gradient mb-2">Message Clipboard</h1>
+                    <p class="text-gray-600 text-sm">Save and organize your messages</p>
+                </div>
+                
+                <div>
+                    <div class="relative">
+                        <textarea 
+                            id="messageInput" 
+                            class="input-field w-full p-4 rounded-2xl focus:outline-none resize-none" 
+                            rows="4" 
+                            placeholder="Enter your message here... 😊🚀"
+                        ></textarea>
+                        <div class="flex justify-between items-center mt-3">
+                            <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
+                            <span id="messageCount" class="counter-badge">0/24 messages</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <button 
+                        id="saveButton" 
+                        class="action-button primary-button w-full text-white px-6 py-4 rounded-2xl font-semibold text-lg disabled:cursor-not-allowed transition-all duration-300" 
+                        disabled
+                    >
+                        💾 Save Message
+                    </button>
+                </div>
+                
+                <p id="debugMessage" class="text-sm text-red-500 p-3 bg-red-50 rounded-xl hidden"></p>
+            </div>
+            
+            <!-- Columns 2-4: Messages Grid Section -->
+            <div class="lg:col-span-3">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Column 2 -->
+                    <div>
+                        <div id="messageColumn1" class="space-y-3"></div>
+                    </div>
+                    <!-- Column 3 -->
+                    <div>
+                        <div id="messageColumn2" class="space-y-3"></div>
+                    </div>
+                    <!-- Column 4 -->
+                    <div>
+                        <div id="messageColumn3" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messageInput = document.getElementById('messageInput');
+        const saveButton = document.getElementById('saveButton');
+        const messageColumn1 = document.getElementById('messageColumn1');
+        const messageColumn2 = document.getElementById('messageColumn2');
+        const messageColumn3 = document.getElementById('messageColumn3');
+        const charCount = document.getElementById('charCount');
+        const messageCount = document.getElementById('messageCount');
+        const debugMessage = document.getElementById('debugMessage');
+        let messages = [];
+        const maxMessages = 24;
+
+        // Load messages from localStorage on page load
+        function loadMessages() {
+            const storedMessages = localStorage.getItem('messages');
+            if (storedMessages) {
+                messages = JSON.parse(storedMessages);
+                updateMessageList();
+                messageCount.textContent = `${messages.length}/${maxMessages} messages`;
+                saveButton.disabled = messageInput.value.length === 0 || messages.length >= maxMessages;
+            }
+        }
+
+        // Save messages to localStorage
+        function saveMessages() {
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+
+        // Show floating notification
+        function showNotification(messageText) {
+            const notification = document.createElement('div');
+            notification.className = 'floating-notification';
+            notification.textContent = messageText;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'notificationSlide 0.4s ease reverse';
+                setTimeout(() => notification.remove(), 400);
+            }, 2000);
+        }
+
+        // Show name input modal
+        function showNameInputModal(messageText) {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-3xl p-8 max-w-md w-full mx-4';
+            modal.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🏷️</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Name Your Message</h3>
+                    <p class="text-gray-600 text-sm mb-4">Give your message a memorable name</p>
+                    <input 
+                        type="text" 
+                        id="messageNameInput" 
+                        class="input-field w-full p-3 rounded-xl focus:outline-none" 
+                        placeholder="Enter message name..."
+                        maxlength="30"
+                    />
+                    <p class="text-xs text-gray-500 mt-2">Max 30 characters</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button class="cancel-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Cancel</button>
+                    <button class="primary-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Save</button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            const nameInput = modal.querySelector('#messageNameInput');
+            const saveBtn = modal.querySelector('.primary-button');
+            const cancelBtn = modal.querySelector('.cancel-button');
+
+            // Auto-focus and suggest a name
+            nameInput.focus();
+            const suggestedName = messageText.substring(0, 25) + (messageText.length > 25 ? '...' : '');
+            nameInput.value = suggestedName;
+            nameInput.select();
+
+            // Handle save
+            saveBtn.addEventListener('click', () => {
+                const name = nameInput.value.trim();
+                if (name) {
+                    const messageObj = {
+                        name: name,
+                        content: messageText,
+                        timestamp: Date.now()
+                    };
+                    messages.push(messageObj);
+                    updateMessageList();
+                    saveMessages();
+                    messageInput.value = '';
+                    charCount.textContent = `0 characters`;
+                    charCount.className = 'text-sm text-gray-500 font-medium';
+                    saveButton.disabled = true;
+                    messageCount.textContent = `${messages.length}/${maxMessages} messages`;
+                    showNotification('Message saved successfully! ✨');
+                    overlay.remove();
+                } else {
+                    nameInput.focus();
+                    nameInput.style.borderColor = '#ef4444';
+                    setTimeout(() => nameInput.style.borderColor = '', 2000);
+                }
+            });
+
+            // Handle cancel
+            cancelBtn.addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+
+            // Handle Enter key
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveBtn.click();
+                }
+            });
+        }
+
+        // Show modern modal for delete confirmation
+        function showWarningMessage(index) {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-3xl p-8 max-w-sm w-full mx-4 text-center';
+            modal.innerHTML = `
+                <div class="mb-6">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🗑️</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Delete Message</h3>
+                    <p class="text-gray-600">Are you sure you want to delete "${messages[index].name || 'this message'}"? This action cannot be undone.</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button class="cancel-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Cancel</button>
+                    <button class="delete-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Delete</button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            const deleteButton = modal.querySelector('.delete-button');
+            const cancelButton = modal.querySelector('.cancel-button');
+
+            deleteButton.addEventListener('click', () => {
+                deleteMessage(index);
+                overlay.remove();
+                showNotification('Message deleted successfully!');
+            });
+            
+            cancelButton.addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+        }
+
+        // Update character count and button state
+        messageInput.addEventListener('input', () => {
+            const currentLength = messageInput.value.length;
+            charCount.textContent = `${currentLength} characters`;
+            
+            saveButton.disabled = currentLength === 0 || messages.length >= maxMessages;
+        });
+
+        // Save message and create button
+        saveButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message && messages.length < maxMessages) {
+                showNameInputModal(message);
+            }
+        });
+
+        // Update the message list with buttons distributed across columns
+        function updateMessageList() {
+            messageColumn1.innerHTML = '';
+            messageColumn2.innerHTML = '';
+            messageColumn3.innerHTML = '';
+            
+            messages.forEach((msgObj, index) => {
+                // Handle both old string format and new object format
+                const isOldFormat = typeof msgObj === 'string';
+                const messageName = isOldFormat ? msgObj.substring(0, 20) + (msgObj.length > 20 ? '...' : '') : msgObj.name;
+                const messageContent = isOldFormat ? msgObj : msgObj.content;
+                
+                const messageContainer = document.createElement('div');
+                messageContainer.className = 'message-container relative';
+
+                // Message button for copying - now shows the name
+                const button = document.createElement('button');
+                button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[50px] flex items-center pr-20';
+                button.innerHTML = `
+                    <div class="w-full">
+                        <div class="font-semibold text-gray-800 truncate text-sm">${messageName}</div>
+                        <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 20 ? messageContent.substring(0, 20) + '...' : messageContent}</div>
+                    </div>
+                `;
+                button.title = `${messageName}\n\n${messageContent}`;
+                button.addEventListener('click', () => {
+                    copyToClipboard(messageContent, button);
+                    showNotification('Message copied to clipboard! 📋');
+                });
+
+                // Action buttons container
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'message-actions';
+
+                // Edit button
+                const editButton = document.createElement('button');
+                editButton.className = 'edit-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    editMessage(index, messageContainer, button);
+                });
+
+                // Delete button
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
+                deleteButton.textContent = 'Del';
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showWarningMessage(index);
+                });
+
+                actionsContainer.appendChild(editButton);
+                actionsContainer.appendChild(deleteButton);
+
+                messageContainer.appendChild(button);
+                messageContainer.appendChild(actionsContainer);
+                
+                // Distribute messages across columns (8 messages per column)
+                if (index < 8) {
+                    messageColumn1.appendChild(messageContainer);
+                } else if (index < 16) {
+                    messageColumn2.appendChild(messageContainer);
+                } else {
+                    messageColumn3.appendChild(messageContainer);
+                }
+            });
+        }
+
+        // Copy message to clipboard with fallback
+        async function copyToClipboard(text, button) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                    } catch (err) {
+                        throw new Error('Fallback copy failed');
+                    } finally {
+                        document.body.removeChild(textarea);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                button.classList.add('copy-failed');
+                debugMessage.textContent = 'Copy failed. Ensure the page is served over HTTPS or try a different browser.';
+                debugMessage.classList.remove('hidden');
+                setTimeout(() => {
+                    button.classList.remove('copy-failed');
+                    debugMessage.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        // Edit message
+        function editMessage(index, container, messageButton) {
+            const currentMessage = messages[index];
+            const isOldFormat = typeof currentMessage === 'string';
+            const currentContent = isOldFormat ? currentMessage : currentMessage.content;
+            const currentName = isOldFormat ? currentMessage.substring(0, 20) : currentMessage.name;
+            
+            container.innerHTML = '';
+            container.className = 'bg-white p-4 rounded-2xl border-2 border-blue-200';
+            
+            const nameInput = document.createElement('input');
+            nameInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none mb-2 text-sm';
+            nameInput.value = currentName;
+            nameInput.placeholder = 'Message name...';
+            nameInput.maxLength = 30;
+            
+            const contentInput = document.createElement('textarea');
+            contentInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none resize-none mb-2 text-sm';
+            contentInput.value = currentContent;
+            contentInput.rows = 2;
+            contentInput.placeholder = 'Edit your message here... 😊🚀';
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'flex space-x-2';
+
+            const saveEditButton = document.createElement('button');
+            saveEditButton.className = 'save-edit-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
+            saveEditButton.textContent = '💾 Save';
+            saveEditButton.addEventListener('click', () => {
+                const newName = nameInput.value.trim();
+                const newContent = contentInput.value.trim();
+                if (newName && newContent) {
+                    messages[index] = {
+                        name: newName,
+                        content: newContent,
+                        timestamp: Date.now()
+                    };
+                    updateMessageList();
+                    saveMessages();
+                    showNotification('Message updated successfully! ✨');
+                } else {
+                    showNotification('Name and message cannot be empty.');
+                }
+            });
+
+            const cancelButton = document.createElement('button');
+            cancelButton.className = 'cancel-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
+            cancelButton.textContent = '❌ Cancel';
+            cancelButton.addEventListener('click', () => updateMessageList());
+
+            buttonContainer.appendChild(saveEditButton);
+            buttonContainer.appendChild(cancelButton);
+            
+            container.appendChild(nameInput);
+            container.appendChild(contentInput);
+            container.appendChild(buttonContainer);
+            
+            nameInput.focus();
+            nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length);
+        }
+
+        // Delete message
+        function deleteMessage(index) {
+            messages.splice(index, 1);
+            updateMessageList();
+            saveMessages();
+            messageCount.textContent = `${messages.length}/${maxMessages} messages`;
+            saveButton.disabled = messageInput.value.length === 0 || messageInput.value.length > maxChars || messages.length >= maxMessages;
+        }
+
+        // Initialize messages on page load
+        loadMessages();
+    </script>
+</body>
+</html>
