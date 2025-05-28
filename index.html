@@ -32,6 +32,13 @@
             position: relative;
         }
         
+        @media (max-width: 640px) {
+            .message-button {
+                min-height: 60px;
+                padding-right: 60px !important;
+            }
+        }
+        
         .message-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -48,11 +55,23 @@
             top: 4px;
             right: 4px;
             display: flex;
-            gap: 4px;
+            gap: 3px;
             opacity: 0;
             transform: translateX(10px);
             transition: all 0.2s ease;
             z-index: 10;
+        }
+        
+        @media (max-width: 640px) {
+            .message-actions {
+                gap: 2px;
+                top: 50%;
+                transform: translateY(-50%) translateX(10px);
+            }
+            
+            .message-container:hover .message-actions {
+                transform: translateY(-50%) translateX(0);
+            }
         }
         
         .message-container:hover .message-actions {
@@ -174,6 +193,14 @@
             animation: modalSlideIn 0.3s ease;
         }
         
+        @media (max-width: 640px) {
+            .modal-content {
+                margin: 16px;
+                max-width: calc(100% - 32px);
+                padding: 24px 20px;
+            }
+        }
+        
         @keyframes modalSlideIn {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
             to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -191,6 +218,19 @@
             animation: notificationSlide 0.4s ease;
             z-index: 1001;
             font-weight: 500;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 640px) {
+            .floating-notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 10px 16px;
+                font-size: 13px;
+                text-align: center;
+            }
         }
         
         @keyframes notificationSlide {
@@ -240,27 +280,27 @@
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-    <div class="glass-card p-8 rounded-3xl w-full" style="max-width: 1680px;">
+    <div class="glass-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl w-full" style="max-width: 1680px;">
         
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
             <!-- Column 1: Input Section -->
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
                 <div class="text-center">
-                    <h1 class="text-3xl title-gradient mb-2">Message Clipboard</h1>
-                    <p class="text-gray-600 text-sm">Save and organize your messages</p>
+                    <h1 class="text-2xl sm:text-3xl title-gradient mb-2">Message Clipboard</h1>
+                    <p class="text-gray-600 text-xs sm:text-sm">Save and organize your messages</p>
                 </div>
                 
                 <div>
                     <div class="relative">
                         <textarea 
                             id="messageInput" 
-                            class="input-field w-full p-4 rounded-2xl focus:outline-none resize-none" 
-                            rows="4" 
+                            class="input-field w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl focus:outline-none resize-none text-sm sm:text-base" 
+                            rows="3" 
                             placeholder="Enter your message here... 😊🚀"
                         ></textarea>
-                        <div class="flex justify-between items-center mt-3">
-                            <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
-                            <span id="messageCount" class="counter-badge">0/24 messages</span>
+                        <div class="flex justify-between items-center mt-2 sm:mt-3">
+                            <span id="charCount" class="text-xs sm:text-sm text-gray-500 font-medium">0 characters</span>
+                            <span id="messageCount" class="counter-badge text-xs">0/24 messages</span>
                         </div>
                     </div>
                 </div>
@@ -268,31 +308,31 @@
                 <div>
                     <button 
                         id="saveButton" 
-                        class="action-button primary-button w-full text-white px-6 py-4 rounded-2xl font-semibold text-lg disabled:cursor-not-allowed transition-all duration-300" 
+                        class="action-button primary-button w-full text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg disabled:cursor-not-allowed transition-all duration-300" 
                         disabled
                     >
                         💾 Save Message
                     </button>
                 </div>
                 
-                <p id="debugMessage" class="text-sm text-red-500 p-3 bg-red-50 rounded-xl hidden"></p>
+                <p id="debugMessage" class="text-xs sm:text-sm text-red-500 p-2 sm:p-3 bg-red-50 rounded-lg sm:rounded-xl hidden"></p>
             </div>
             
             <!-- Columns 2-4: Messages Grid Section -->
             <div class="lg:col-span-3">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-3 sm:mb-4 text-center">Saved Messages</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                     <!-- Column 2 -->
                     <div>
-                        <div id="messageColumn1" class="space-y-3"></div>
+                        <div id="messageColumn1" class="space-y-2 sm:space-y-3"></div>
                     </div>
                     <!-- Column 3 -->
-                    <div>
-                        <div id="messageColumn2" class="space-y-3"></div>
+                    <div class="hidden sm:block">
+                        <div id="messageColumn2" class="space-y-2 sm:space-y-3"></div>
                     </div>
                     <!-- Column 4 -->
-                    <div>
-                        <div id="messageColumn3" class="space-y-3"></div>
+                    <div class="hidden md:block">
+                        <div id="messageColumn3" class="space-y-2 sm:space-y-3"></div>
                     </div>
                 </div>
             </div>
@@ -494,10 +534,10 @@
 
                 // Message button for copying - now shows the name
                 const button = document.createElement('button');
-                button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[50px] flex items-center pr-20';
+                button.className = 'message-button w-full text-left p-2 sm:p-3 rounded-lg sm:rounded-xl relative font-medium min-h-[50px] flex items-center pr-16 sm:pr-20';
                 button.innerHTML = `
                     <div class="w-full">
-                        <div class="font-semibold text-gray-800 truncate text-sm">${messageName}</div>
+                        <div class="font-semibold text-gray-800 truncate text-xs sm:text-sm">${messageName}</div>
                         <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 20 ? messageContent.substring(0, 20) + '...' : messageContent}</div>
                     </div>
                 `;
@@ -513,7 +553,7 @@
 
                 // Edit button
                 const editButton = document.createElement('button');
-                editButton.className = 'edit-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
+                editButton.className = 'edit-button action-button text-white px-1.5 sm:px-2 py-1 rounded-md sm:rounded-lg font-medium text-xs';
                 editButton.textContent = 'Edit';
                 editButton.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -522,7 +562,7 @@
 
                 // Delete button
                 const deleteButton = document.createElement('button');
-                deleteButton.className = 'delete-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
+                deleteButton.className = 'delete-button action-button text-white px-1.5 sm:px-2 py-1 rounded-md sm:rounded-lg font-medium text-xs';
                 deleteButton.textContent = 'Del';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -535,13 +575,29 @@
                 messageContainer.appendChild(button);
                 messageContainer.appendChild(actionsContainer);
                 
-                // Distribute messages across columns (8 messages per column)
-                if (index < 8) {
+                // Responsive distribution of messages across columns
+                const isMobile = window.innerWidth < 640;
+                const isTablet = window.innerWidth >= 640 && window.innerWidth < 768;
+                
+                if (isMobile) {
+                    // Mobile: All messages in column 1
                     messageColumn1.appendChild(messageContainer);
-                } else if (index < 16) {
-                    messageColumn2.appendChild(messageContainer);
+                } else if (isTablet) {
+                    // Tablet: 2 columns
+                    if (index % 2 === 0) {
+                        messageColumn1.appendChild(messageContainer);
+                    } else {
+                        messageColumn2.appendChild(messageContainer);
+                    }
                 } else {
-                    messageColumn3.appendChild(messageContainer);
+                    // Desktop: 3 columns (8 messages per column)
+                    if (index < 8) {
+                        messageColumn1.appendChild(messageContainer);
+                    } else if (index < 16) {
+                        messageColumn2.appendChild(messageContainer);
+                    } else {
+                        messageColumn3.appendChild(messageContainer);
+                    }
                 }
             });
         }
@@ -584,7 +640,7 @@
             const currentName = isOldFormat ? currentMessage.substring(0, 20) : currentMessage.name;
             
             container.innerHTML = '';
-            container.className = 'bg-white p-4 rounded-2xl border-2 border-blue-200';
+            container.className = 'bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 border-blue-200';
             
             const nameInput = document.createElement('input');
             nameInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none mb-2 text-sm';
@@ -602,7 +658,7 @@
             buttonContainer.className = 'flex space-x-2';
 
             const saveEditButton = document.createElement('button');
-            saveEditButton.className = 'save-edit-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
+            saveEditButton.className = 'save-edit-button action-button text-white px-2 sm:px-3 py-1 rounded-lg font-medium text-xs flex-1';
             saveEditButton.textContent = '💾 Save';
             saveEditButton.addEventListener('click', () => {
                 const newName = nameInput.value.trim();
@@ -622,7 +678,7 @@
             });
 
             const cancelButton = document.createElement('button');
-            cancelButton.className = 'cancel-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
+            cancelButton.className = 'cancel-button action-button text-white px-2 sm:px-3 py-1 rounded-lg font-medium text-xs flex-1';
             cancelButton.textContent = '❌ Cancel';
             cancelButton.addEventListener('click', () => updateMessageList());
 
@@ -648,6 +704,9 @@
 
         // Initialize messages on page load
         loadMessages();
+        
+        // Handle window resize for responsive layout
+        window.addEventListener('resize', updateMessageList);
     </script>
 </body>
 </html>
