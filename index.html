@@ -41,6 +41,28 @@
         
         .message-container {
             position: relative;
+            cursor: grab; /* Indicate draggable */
+        }
+        
+        /* Enhanced dragging visual effect: Purple glow */
+        .message-container.dragging {
+            opacity: 0.7; /* Slightly more visible */
+            border: 2px dashed #6366f1;
+            transform: scale(0.98); /* Slight scale down */
+            box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.7); /* Purple glow */
+            transition: all 0.1s ease-out; /* Smooth transition for dragging state */
+        }
+
+        /* Drag over target visual effect: Yellow glow and dashed border */
+        .message-container.drag-over-target {
+            box-shadow: 0 0 15px 4px rgba(255, 204, 0, 0.7); /* Yellow glow */
+            border: 2px dashed #ffcc00; /* Dashed yellow border */
+            transform: scale(1.02); /* Slightly larger to indicate target */
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px dashed #6366f1;
         }
         
         .message-actions {
@@ -84,6 +106,7 @@
         .primary-button {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            color: white; /* Added to make text white */
         }
         
         .primary-button:hover {
@@ -237,13 +260,108 @@
             background-clip: text;
             font-weight: 700;
         }
+
+        /* Styles for search results modal */
+        .search-results-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            border-radius: 2rem;
+        }
+
+        .search-results-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .search-results-content {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .search-results-modal.active .search-results-content {
+            transform: translateY(0);
+        }
+
+        .search-result-item {
+            background: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .search-result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-result-name {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.25rem;
+        }
+
+        .search-result-content {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .search-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .search-close-button:hover {
+            background: #dc2626;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     <div class="glass-card p-8 rounded-3xl w-full" style="max-width: 1680px;">
         
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Column 1: Input Section -->
             <div class="space-y-6">
                 <div class="text-center">
                     <h1 class="text-3xl title-gradient mb-2">Message Clipboard</h1>
@@ -260,7 +378,7 @@
                         ></textarea>
                         <div class="flex justify-between items-center mt-3">
                             <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
-                            <span id="messageCount" class="counter-badge">0/24 messages</span>
+                            <span id="messageCount" class="counter-badge">0/30 messages</span>
                         </div>
                     </div>
                 </div>
@@ -274,25 +392,44 @@
                         💾 Save Message
                     </button>
                 </div>
+
+                <div class="mt-6">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        class="input-field w-full p-3 rounded-2xl focus:outline-none" 
+                        placeholder="🔍 Search messages..."
+                    />
+                </div>
                 
                 <p id="debugMessage" class="text-sm text-red-500 p-3 bg-red-50 rounded-xl hidden"></p>
             </div>
             
-            <!-- Columns 2-4: Messages Grid Section -->
-            <div class="lg:col-span-3">
+            <div class="lg:col-span-3 relative">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Column 2 -->
-                    <div>
-                        <div id="messageColumn1" class="space-y-3"></div>
-                    </div>
-                    <!-- Column 3 -->
-                    <div>
-                        <div id="messageColumn2" class="space-y-3"></div>
-                    </div>
-                    <!-- Column 4 -->
-                    <div>
-                        <div id="messageColumn3" class="space-y-3"></div>
+                    <div id="messageColumn1" class="space-y-3 drop-zone min-h-[100px] p-2 rounded-xl"></div>
+                    <div id="messageColumn2" class="space-y-3 drop-zone min-h-[100px] p-2 rounded-xl"></div>
+                    <div id="messageColumn3" class="space-y-3 drop-zone min-h-[100px] p-2 rounded-xl"></div>
+                </div>
+
+                <div class="flex justify-center items-center mt-6 space-x-4">
+                    <button id="prevPageButton" class="action-button primary-button px-4 py-2 rounded-xl font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        &larr; Previous
+                    </button>
+                    <span id="pageInfo" class="text-gray-700 font-semibold">Page 1 of 1</span>
+                    <button id="nextPageButton" class="action-button primary-button px-4 py-2 rounded-xl font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next &rarr;
+                    </button>
+                </div>
+
+                <div id="searchResultsModal" class="search-results-modal">
+                    <div class="search-results-content scrollbar-custom">
+                        <button id="searchCloseButton" class="search-close-button">✕</button>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Search Results</h3>
+                        <div id="searchResultsList" class="space-y-3">
+                            </div>
+                        <p id="noSearchResults" class="text-center text-gray-500 mt-4 hidden">No results found.</p>
                     </div>
                 </div>
             </div>
@@ -300,6 +437,7 @@
     </div>
 
     <script>
+        // Get references to HTML elements
         const messageInput = document.getElementById('messageInput');
         const saveButton = document.getElementById('saveButton');
         const messageColumn1 = document.getElementById('messageColumn1');
@@ -308,39 +446,71 @@
         const charCount = document.getElementById('charCount');
         const messageCount = document.getElementById('messageCount');
         const debugMessage = document.getElementById('debugMessage');
-        let messages = [];
-        const maxMessages = 24;
+        const searchInput = document.getElementById('searchInput');
+        const searchResultsModal = document.getElementById('searchResultsModal');
+        const searchResultsList = document.getElementById('searchResultsList');
+        const searchCloseButton = document.getElementById('searchCloseButton');
+        const noSearchResults = document.getElementById('noSearchResults');
+        
+        // Pagination elements
+        const prevPageButton = document.getElementById('prevPageButton');
+        const nextPageButton = document.getElementById('nextPageButton');
+        const pageInfo = document.getElementById('pageInfo');
 
-        // Load messages from localStorage on page load
+        // Array to store messages
+        let messages = [];
+        // Maximum number of messages allowed on a single page
+        const messagesPerPage = 30; 
+        // Current page number (0-indexed)
+        let currentPage = 0;
+        // Variable to store the currently dragged message's index
+        let draggedItemIndex = null;
+
+        /**
+         * Loads messages from localStorage on page load.
+         * Updates the message list and UI elements accordingly.
+         */
         function loadMessages() {
             const storedMessages = localStorage.getItem('messages');
             if (storedMessages) {
                 messages = JSON.parse(storedMessages);
-                updateMessageList();
-                messageCount.textContent = `${messages.length}/${maxMessages} messages`;
-                saveButton.disabled = messageInput.value.length === 0 || messages.length >= maxMessages;
             }
+            updateMessageList();
+            updatePaginationControls();
+            // Disable save button if message input is empty or current page is full
+            // Note: messages.length >= messagesPerPage is for the current page, not total messages.
+            // The total message limit is now dynamic with pages.
+            saveButton.disabled = messageInput.value.length === 0;
         }
 
-        // Save messages to localStorage
+        /**
+         * Saves the current messages array to localStorage.
+         */
         function saveMessages() {
             localStorage.setItem('messages', JSON.stringify(messages));
         }
 
-        // Show floating notification
+        /**
+         * Displays a floating notification with the given message text.
+         * @param {string} messageText - The text to display in the notification.
+         */
         function showNotification(messageText) {
             const notification = document.createElement('div');
             notification.className = 'floating-notification';
             notification.textContent = messageText;
             document.body.appendChild(notification);
 
+            // Hide and remove the notification after a delay
             setTimeout(() => {
                 notification.style.animation = 'notificationSlide 0.4s ease reverse';
                 setTimeout(() => notification.remove(), 400);
             }, 2000);
         }
 
-        // Show name input modal
+        /**
+         * Displays a modal for the user to input a name for the message.
+         * @param {string} messageText - The content of the message to be named.
+         */
         function showNameInputModal(messageText) {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
@@ -376,13 +546,13 @@
             const saveBtn = modal.querySelector('.primary-button');
             const cancelBtn = modal.querySelector('.cancel-button');
 
-            // Auto-focus and suggest a name
+            // Auto-focus and suggest a name based on the message content
             nameInput.focus();
             const suggestedName = messageText.substring(0, 25) + (messageText.length > 25 ? '...' : '');
             nameInput.value = suggestedName;
-            nameInput.select();
+            nameInput.select(); // Select the suggested text for easy editing
 
-            // Handle save
+            // Event listener for saving the message
             saveBtn.addEventListener('click', () => {
                 const name = nameInput.value.trim();
                 if (name) {
@@ -391,30 +561,38 @@
                         content: messageText,
                         timestamp: Date.now()
                     };
-                    messages.push(messageObj);
-                    updateMessageList();
-                    saveMessages();
-                    messageInput.value = '';
+                    messages.push(messageObj); // Add new message to the array
+                    // After adding, navigate to the last page if it's a new page
+                    currentPage = Math.floor(messages.length / messagesPerPage);
+                    if (messages.length % messagesPerPage === 0 && messages.length > 0) {
+                        currentPage = Math.max(0, Math.ceil(messages.length / messagesPerPage) - 1);
+                    }
+                    
+                    updateMessageList(); // Update the displayed list
+                    saveMessages(); // Save to localStorage
+                    messageInput.value = ''; // Clear input field
                     charCount.textContent = `0 characters`;
                     charCount.className = 'text-sm text-gray-500 font-medium';
-                    saveButton.disabled = true;
-                    messageCount.textContent = `${messages.length}/${maxMessages} messages`;
-                    showNotification('Message saved successfully! ✨');
-                    overlay.remove();
+                    saveButton.disabled = true; // Disable save button
+                    showNotification('Message saved successfully! ✨'); // Show success notification
+                    overlay.remove(); // Close the modal
+                    updatePaginationControls(); // Update pagination after saving
                 } else {
+                    // If name is empty, highlight input and refocus
                     nameInput.focus();
                     nameInput.style.borderColor = '#ef4444';
                     setTimeout(() => nameInput.style.borderColor = '', 2000);
                 }
             });
 
-            // Handle cancel
+            // Event listener for canceling the modal
             cancelBtn.addEventListener('click', () => overlay.remove());
+            // Close modal if clicking outside the modal content
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) overlay.remove();
             });
 
-            // Handle Enter key
+            // Handle Enter key press to save the message
             nameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     saveBtn.click();
@@ -422,7 +600,10 @@
             });
         }
 
-        // Show modern modal for delete confirmation
+        /**
+         * Displays a warning modal for confirming message deletion.
+         * @param {number} index - The index of the message to be deleted.
+         */
         function showWarningMessage(index) {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
@@ -449,50 +630,102 @@
             const deleteButton = modal.querySelector('.delete-button');
             const cancelButton = modal.querySelector('.cancel-button');
 
+            // Event listener for confirming deletion
             deleteButton.addEventListener('click', () => {
-                deleteMessage(index);
-                overlay.remove();
-                showNotification('Message deleted successfully!');
+                deleteMessage(index); // Delete the message
+                overlay.remove(); // Close the modal
+                showNotification('Message deleted successfully!'); // Show success notification
             });
             
+            // Event listener for canceling deletion
             cancelButton.addEventListener('click', () => overlay.remove());
+            // Close modal if clicking outside the modal content
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) overlay.remove();
             });
         }
 
-        // Update character count and button state
+        // Event listener for message input to update character count and button state
         messageInput.addEventListener('input', () => {
             const currentLength = messageInput.value.length;
             charCount.textContent = `${currentLength} characters`;
             
-            saveButton.disabled = currentLength === 0 || messages.length >= maxMessages;
+            // Enable/disable save button based on input length
+            saveButton.disabled = currentLength === 0;
         });
 
-        // Save message and create button
+        // Event listener for save button click
         saveButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
-            if (message && messages.length < maxMessages) {
+            // Only show name input modal if message is not empty
+            if (message) {
                 showNameInputModal(message);
             }
         });
 
-        // Update the message list with buttons distributed across columns
+        /**
+         * Updates the displayed message list, distributing messages across three columns.
+         * Also sets up drag and drop event listeners for each message container.
+         */
         function updateMessageList() {
+            // Clear existing messages from all columns
             messageColumn1.innerHTML = '';
             messageColumn2.innerHTML = '';
             messageColumn3.innerHTML = '';
             
-            messages.forEach((msgObj, index) => {
-                // Handle both old string format and new object format
+            const startIdx = currentPage * messagesPerPage;
+            const endIdx = startIdx + messagesPerPage;
+            const messagesToDisplay = messages.slice(startIdx, endIdx);
+
+            messagesToDisplay.forEach((msgObj, localIndex) => { // localIndex is 0-29 for current page
+                // Handle both old string format and new object format for backward compatibility
                 const isOldFormat = typeof msgObj === 'string';
                 const messageName = isOldFormat ? msgObj.substring(0, 20) + (msgObj.length > 20 ? '...' : '') : msgObj.name;
                 const messageContent = isOldFormat ? msgObj : msgObj.content;
                 
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container relative';
+                messageContainer.draggable = true; // Make message container draggable
+                // Store the global index, not local, for accurate array manipulation
+                messageContainer.dataset.index = startIdx + localIndex; 
 
-                // Message button for copying - now shows the name
+                // Drag and Drop Event Listeners for individual messages
+                messageContainer.addEventListener('dragstart', (e) => {
+                    draggedItemIndex = parseInt(e.target.dataset.index); // Get global index
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', draggedItemIndex); // Pass the global index
+                    setTimeout(() => {
+                        messageContainer.classList.add('dragging'); // Add dragging class after a short delay
+                    }, 0);
+                });
+
+                // Add dragenter event listener for target glow
+                messageContainer.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    // Ensure we are not dragging over ourselves and that a drag is in progress
+                    if (draggedItemIndex !== null && parseInt(messageContainer.dataset.index) !== draggedItemIndex) {
+                        messageContainer.classList.add('drag-over-target');
+                    }
+                });
+
+                // Add dragleave event listener to remove target glow
+                messageContainer.addEventListener('dragleave', (e) => {
+                    // Check if the mouse is truly leaving the element and not just entering a child
+                    const relatedTarget = e.relatedTarget;
+                    if (relatedTarget && messageContainer.contains(relatedTarget)) {
+                        return; // Still inside the draggable area or its children
+                    }
+                    messageContainer.classList.remove('drag-over-target');
+                });
+
+                messageContainer.addEventListener('dragend', () => {
+                    messageContainer.classList.remove('dragging'); // Remove dragging class
+                    // Ensure all drag-over-target classes are removed from all elements
+                    document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
+                    draggedItemIndex = null; // Reset dragged item index
+                });
+
+                // Create the main message button for copying
                 const button = document.createElement('button');
                 button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[50px] flex items-center pr-20';
                 button.innerHTML = `
@@ -501,74 +734,84 @@
                         <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 20 ? messageContent.substring(0, 20) + '...' : messageContent}</div>
                     </div>
                 `;
-                button.title = `${messageName}\n\n${messageContent}`;
+                button.title = `${messageName}\n\n${messageContent}`; // Full content on hover
                 button.addEventListener('click', () => {
-                    copyToClipboard(messageContent, button);
-                    showNotification('Message copied to clipboard! 📋');
+                    copyToClipboard(messageContent, button); // Copy content to clipboard
+                    showNotification('Message copied to clipboard! 📋'); // Show notification
                 });
 
-                // Action buttons container
+                // Create container for action buttons (edit, delete)
                 const actionsContainer = document.createElement('div');
                 actionsContainer.className = 'message-actions';
 
-                // Edit button
+                // Create Edit button
                 const editButton = document.createElement('button');
                 editButton.className = 'edit-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
                 editButton.textContent = 'Edit';
                 editButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    editMessage(index, messageContainer, button);
+                    e.stopPropagation(); // Prevent button click from triggering copy
+                    editMessage(startIdx + localIndex, messageContainer, button); // Pass global index
                 });
 
-                // Delete button
+                // Create Delete button
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'delete-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
                 deleteButton.textContent = 'Del';
                 deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showWarningMessage(index);
+                    e.stopPropagation(); // Prevent button click from triggering copy
+                    showWarningMessage(startIdx + localIndex); // Pass global index
                 });
 
+                // Append action buttons to their container
                 actionsContainer.appendChild(editButton);
                 actionsContainer.appendChild(deleteButton);
 
+                // Append button and actions to the message container
                 messageContainer.appendChild(button);
                 messageContainer.appendChild(actionsContainer);
                 
-                // Distribute messages across columns (8 messages per column)
-                if (index < 8) {
+                // Distribute messages across columns (10 messages per column)
+                if (localIndex < 10) {
                     messageColumn1.appendChild(messageContainer);
-                } else if (index < 16) {
+                } else if (localIndex < 20) {
                     messageColumn2.appendChild(messageContainer);
-                } else {
+                } else { // localIndex >= 20 and < 30
                     messageColumn3.appendChild(messageContainer);
                 }
             });
+            messageCount.textContent = `${messages.length} total messages`; // Update total count
         }
 
-        // Copy message to clipboard with fallback
+        /**
+         * Copies text to the clipboard. Provides a fallback for insecure contexts.
+         * @param {string} text - The text to copy.
+         * @param {HTMLElement} button - The button element that triggered the copy, used for error styling.
+         */
         async function copyToClipboard(text, button) {
             try {
+                // Use modern Clipboard API if available and secure
                 if (navigator.clipboard && window.isSecureContext) {
                     await navigator.clipboard.writeText(text);
                 } else {
+                    // Fallback for older browsers or insecure contexts
                     const textarea = document.createElement('textarea');
                     textarea.value = text;
                     document.body.appendChild(textarea);
                     textarea.select();
                     try {
-                        document.execCommand('copy');
+                        document.execCommand('copy'); // Deprecated but widely supported fallback
                     } catch (err) {
                         throw new Error('Fallback copy failed');
                     } finally {
-                        document.body.removeChild(textarea);
+                        document.body.removeChild(textarea); // Clean up textarea
                     }
                 }
             } catch (err) {
                 console.error('Failed to copy:', err);
-                button.classList.add('copy-failed');
+                button.classList.add('copy-failed'); // Add error styling
                 debugMessage.textContent = 'Copy failed. Ensure the page is served over HTTPS or try a different browser.';
-                debugMessage.classList.remove('hidden');
+                debugMessage.classList.remove('hidden'); // Show debug message
+                // Remove error styling and debug message after a delay
                 setTimeout(() => {
                     button.classList.remove('copy-failed');
                     debugMessage.classList.add('hidden');
@@ -576,31 +819,41 @@
             }
         }
 
-        // Edit message
+        /**
+         * Enables editing of an existing message. Replaces the message display with input fields.
+         * @param {number} index - The index of the message to edit.
+         * @param {HTMLElement} container - The HTML container element of the message.
+         * @param {HTMLElement} messageButton - The original message button element.
+         */
         function editMessage(index, container, messageButton) {
             const currentMessage = messages[index];
+            // Determine if message is in old string format or new object format
             const isOldFormat = typeof currentMessage === 'string';
             const currentContent = isOldFormat ? currentMessage : currentMessage.content;
             const currentName = isOldFormat ? currentMessage.substring(0, 20) : currentMessage.name;
             
-            container.innerHTML = '';
-            container.className = 'bg-white p-4 rounded-2xl border-2 border-blue-200';
+            container.innerHTML = ''; // Clear current content
+            container.className = 'bg-white p-4 rounded-2xl border-2 border-blue-200'; // Apply editing styles
             
+            // Create input field for message name
             const nameInput = document.createElement('input');
             nameInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none mb-2 text-sm';
             nameInput.value = currentName;
             nameInput.placeholder = 'Message name...';
-            nameInput.maxLength = 30;
+            nameInput.maxLength = 30; // Limit name length
             
+            // Create textarea for message content
             const contentInput = document.createElement('textarea');
             contentInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none resize-none mb-2 text-sm';
             contentInput.value = currentContent;
-            contentInput.rows = 2;
-            contentInput.placeholder = 'Edit your message here... 😊🚀';
+            contentInput.rows = 2; // Initial rows for textarea
+            contentInput.placeholder = 'Edit your message here... 😊�';
 
+            // Create button container for save and cancel
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'flex space-x-2';
 
+            // Create Save Edit button
             const saveEditButton = document.createElement('button');
             saveEditButton.className = 'save-edit-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
             saveEditButton.textContent = '💾 Save';
@@ -608,45 +861,244 @@
                 const newName = nameInput.value.trim();
                 const newContent = contentInput.value.trim();
                 if (newName && newContent) {
+                    // Update message object with new name and content
                     messages[index] = {
                         name: newName,
                         content: newContent,
                         timestamp: Date.now()
                     };
-                    updateMessageList();
-                    saveMessages();
-                    showNotification('Message updated successfully! ✨');
+                    updateMessageList(); // Refresh the message list
+                    saveMessages(); // Save changes to localStorage
+                    showNotification('Message updated successfully! ✨'); // Show success notification
                 } else {
-                    showNotification('Name and message cannot be empty.');
+                    showNotification('Name and message cannot be empty.'); // Show error notification
                 }
             });
 
+            // Create Cancel button
             const cancelButton = document.createElement('button');
             cancelButton.className = 'cancel-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
             cancelButton.textContent = '❌ Cancel';
-            cancelButton.addEventListener('click', () => updateMessageList());
+            cancelButton.addEventListener('click', () => updateMessageList()); // Revert to original display
 
+            // Append buttons to their container
             buttonContainer.appendChild(saveEditButton);
             buttonContainer.appendChild(cancelButton);
             
+            // Append input fields and button container to the message container
             container.appendChild(nameInput);
             container.appendChild(contentInput);
             container.appendChild(buttonContainer);
             
+            // Focus on the name input and place cursor at the end
             nameInput.focus();
             nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length);
         }
 
-        // Delete message
+        /**
+         * Deletes a message from the messages array and updates the UI.
+         * @param {number} index - The index of the message to delete.
+         */
         function deleteMessage(index) {
-            messages.splice(index, 1);
-            updateMessageList();
-            saveMessages();
-            messageCount.textContent = `${messages.length}/${maxMessages} messages`;
-            saveButton.disabled = messageInput.value.length === 0 || messageInput.value.length > maxChars || messages.length >= maxMessages;
+            messages.splice(index, 1); // Remove message from array
+            // Adjust current page if the last message on a page is deleted
+            const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
+            if (currentPage >= totalPages) {
+                currentPage = Math.max(0, totalPages - 1);
+            }
+            updateMessageList(); // Refresh the message list
+            saveMessages(); // Save changes to localStorage
+            updatePaginationControls(); // Update pagination after deletion
+            // Re-evaluate save button disabled state
+            saveButton.disabled = messageInput.value.length === 0;
         }
 
-        // Initialize messages on page load
+        // --- Drag and Drop Logic ---
+
+        // Get all drop zone elements
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Allow drop
+                e.dataTransfer.dropEffect = 'move';
+                // Find the closest message container to potentially insert before
+                const targetMessage = e.target.closest('.message-container');
+                document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
+                if (targetMessage && parseInt(targetMessage.dataset.index) !== draggedItemIndex) {
+                    targetMessage.classList.add('drag-over-target');
+                }
+            });
+
+            zone.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-over'); // Add visual feedback for the column
+            });
+
+            zone.addEventListener('dragleave', (e) => {
+                // Check if the mouse is truly leaving the drop zone and not just entering a child
+                const relatedTarget = e.relatedTarget;
+                if (relatedTarget && zone.contains(relatedTarget)) {
+                    return; // Still inside the drop zone or its children
+                }
+                zone.classList.remove('drag-over'); // Remove visual feedback for the column
+                // Also remove target glow from any message if leaving the column
+                document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over'); // Remove visual feedback from the column
+                document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target')); // Remove target glow
+
+                const draggedGlobalIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                const draggedMessage = messages[draggedGlobalIndex];
+
+                // Remove the dragged message from its original position
+                messages.splice(draggedGlobalIndex, 1);
+
+                // Determine the new global position within the target column
+                const targetElement = e.target.closest('.message-container');
+                let newGlobalInsertIndex;
+
+                if (targetElement) {
+                    // Dropped onto another message, insert before it
+                    const targetGlobalIndex = parseInt(targetElement.dataset.index);
+                    // If the dragged message was before the target in the original array,
+                    // and we removed it, the target's index might effectively shift.
+                    // We need to find the correct insertion point in the *modified* array.
+                    newGlobalInsertIndex = messages.findIndex(msg => msg.timestamp === messages[targetGlobalIndex]?.timestamp && msg.name === messages[targetGlobalIndex]?.name);
+                    if (newGlobalInsertIndex === -1 && targetGlobalIndex < messages.length) {
+                         // Fallback: if exact object not found (e.g., due to splice), try to insert at the original target's position
+                         newGlobalInsertIndex = targetGlobalIndex;
+                    } else if (newGlobalInsertIndex === -1) {
+                         // If target was the last element and removed, append to end
+                         newGlobalInsertIndex = messages.length;
+                    }
+                    
+                } else {
+                    // Dropped into an empty column or not on a specific message, append to the column's section
+                    // Calculate the start index for the target column's section on the current page
+                    let columnBaseIndexOnPage;
+                    if (zone.id === 'messageColumn1') {
+                        columnBaseIndexOnPage = 0;
+                    } else if (zone.id === 'messageColumn2') {
+                        columnBaseIndexOnPage = 10;
+                    } else if (zone.id === 'messageColumn3') {
+                        columnBaseIndexOnPage = 20;
+                    }
+                    // Calculate the global index for appending to this column on the current page
+                    newGlobalInsertIndex = (currentPage * messagesPerPage) + columnBaseIndexOnPage + zone.children.length;
+                    
+                    // Ensure the index doesn't exceed the current messages array length
+                    newGlobalInsertIndex = Math.min(newGlobalInsertIndex, messages.length);
+                }
+                
+                messages.splice(newGlobalInsertIndex, 0, draggedMessage);
+                
+                updateMessageList();
+                saveMessages();
+                updatePaginationControls();
+            });
+        });
+
+        // --- Search Logic ---
+
+        // Event listener for search input
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (searchTerm.length > 0) {
+                const filteredMessages = messages.filter(msg => 
+                    (msg.name && msg.name.toLowerCase().includes(searchTerm)) ||
+                    (msg.content && msg.content.toLowerCase().includes(searchTerm))
+                );
+                displaySearchResults(filteredMessages);
+            } else {
+                closeSearchResults(); // Hide modal if search term is empty
+            }
+        });
+
+        // Event listener for closing search results modal
+        searchCloseButton.addEventListener('click', closeSearchResults);
+        searchResultsModal.addEventListener('click', (e) => {
+            // Close modal only if clicking directly on the overlay, not its content
+            if (e.target === searchResultsModal) {
+                closeSearchResults();
+            }
+        });
+
+        /**
+         * Displays the search results in a modal overlay.
+         * @param {Array<Object>} results - An array of message objects matching the search.
+         */
+        function displaySearchResults(results) {
+            searchResultsList.innerHTML = ''; // Clear previous results
+            
+            if (results.length === 0) {
+                noSearchResults.classList.remove('hidden');
+            } else {
+                noSearchResults.classList.add('hidden');
+                results.forEach(msg => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    resultItem.innerHTML = `
+                        <div class="search-result-name">${msg.name}</div>
+                        <div class="search-result-content">${msg.content}</div>
+                    `;
+                    resultItem.addEventListener('click', () => {
+                        copyToClipboard(msg.content, resultItem);
+                        showNotification('Message copied from search! 📋');
+                        closeSearchResults();
+                    });
+                    searchResultsList.appendChild(resultItem);
+                });
+            }
+            searchResultsModal.classList.add('active'); // Show the modal
+        }
+
+        /**
+         * Hides the search results modal and clears the search input.
+         */
+        function closeSearchResults() {
+            searchResultsModal.classList.remove('active');
+            // searchInput.value = ''; // Do not clear search input so user can refine search
+            searchResultsList.innerHTML = ''; // Clear results
+            noSearchResults.classList.add('hidden'); // Hide no results message
+        }
+
+        // --- Pagination Logic ---
+
+        /**
+         * Updates the state of pagination buttons and page information text.
+         */
+        function updatePaginationControls() {
+            const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
+            pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+
+            prevPageButton.disabled = currentPage === 0;
+            nextPageButton.disabled = currentPage >= totalPages - 1;
+        }
+
+        // Event listener for Previous page button
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                updateMessageList();
+                updatePaginationControls();
+            }
+        });
+
+        // Event listener for Next page button
+        nextPageButton.addEventListener('click', () => {
+            const totalPages = Math.ceil(messages.length / messagesPerPage);
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updateMessageList();
+                updatePaginationControls();
+            }
+        });
+
+        // Initialize messages when the page loads
         loadMessages();
     </script>
 </body>
