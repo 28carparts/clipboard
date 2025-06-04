@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Message Clipboard</title>
-    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <!-- Favicon link - Placeholder -->
+    <link rel="shortcut icon" type="image/png" href="https://placehold.co/32x32/764ba2/FFFFFF?text=MC">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -29,7 +30,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             border: 1px solid rgba(148, 163, 184, 0.2);
-            position: relative;
+            position: relative; /* Needed for absolute positioning of copy count badge */
         }
         
         .message-button:hover {
@@ -41,23 +42,21 @@
         
         .message-container {
             position: relative;
-            cursor: grab; /* Indicate draggable */
+            cursor: grab; 
         }
         
-        /* Enhanced dragging visual effect: Purple glow */
         .message-container.dragging {
-            opacity: 0.7; /* Slightly more visible */
+            opacity: 0.7; 
             border: 2px dashed #6366f1;
-            transform: scale(0.98); /* Slight scale down */
-            box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.7); /* Purple glow */
-            transition: all 0.1s ease-out; /* Smooth transition for dragging state */
+            transform: scale(0.98); 
+            box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.7); 
+            transition: all 0.1s ease-out; 
         }
 
-        /* Drag over target visual effect: Yellow glow and dashed border */
         .message-container.drag-over-target {
-            box-shadow: 0 0 15px 4px rgba(255, 204, 0, 0.7); /* Yellow glow */
-            border: 2px dashed #ffcc00; /* Dashed yellow border */
-            transform: scale(1.02); /* Slightly larger to indicate target */
+            box-shadow: 0 0 15px 4px rgba(255, 204, 0, 0.7); 
+            border: 2px dashed #ffcc00; 
+            transform: scale(1.02); 
         }
 
         .drop-zone.drag-over {
@@ -106,7 +105,7 @@
         .primary-button {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-            color: white; /* Added to make text white */
+            color: white; 
         }
         
         .primary-button:hover {
@@ -230,6 +229,25 @@
             font-size: 12px;
             box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
         }
+
+        .copy-count-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Theme-aligned purple gradient */
+            color: white;
+            font-size: 12px; 
+            font-weight: 600;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            z-index: 5;
+            line-height: 22px; /* Helps vertically center content */
+        }
         
         .scrollbar-custom {
             scrollbar-width: thin;
@@ -261,9 +279,8 @@
             font-weight: 700;
         }
 
-        /* Styles for search results modal */
         .search-results-modal {
-            position: absolute;
+            position: absolute; 
             top: 0;
             left: 0;
             width: 100%;
@@ -276,7 +293,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
-            border-radius: 2rem;
+            border-radius: 1.5rem; 
         }
 
         .search-results-modal.active {
@@ -288,7 +305,7 @@
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 2rem;
+            border-radius: 1.5rem; 
             padding: 2rem;
             max-width: 700px;
             width: 90%;
@@ -335,6 +352,13 @@
             color: #64748b;
         }
 
+        /* Highlight style */
+        .highlight {
+            background-color: #fef08a; /* Tailwind yellow-200 */
+            padding: 2px 0;
+            border-radius: 3px;
+        }
+
         .search-close-button {
             position: absolute;
             top: 1rem;
@@ -362,10 +386,11 @@
     <div class="glass-card p-8 rounded-3xl w-full" style="max-width: 1680px;">
         
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left Column: Input and Controls -->
             <div class="space-y-6">
                 <div class="text-center">
                     <h1 class="text-3xl title-gradient mb-2">Message Clipboard</h1>
-                    <p class="text-gray-600 text-sm">Save and organize your messages</p>
+                    <p class="text-gray-600 text-sm">Save, organize, and copy frequently</p>
                 </div>
                 
                 <div>
@@ -378,7 +403,7 @@
                         ></textarea>
                         <div class="flex justify-between items-center mt-3">
                             <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
-                            <span id="messageCount" class="counter-badge">0/30 messages</span>
+                            <span id="messageCount" class="counter-badge">0 total messages</span>
                         </div>
                     </div>
                 </div>
@@ -405,6 +430,7 @@
                 <p id="debugMessage" class="text-sm text-red-500 p-3 bg-red-50 rounded-xl hidden"></p>
             </div>
             
+            <!-- Right Column: Saved Messages and Search Modal -->
             <div class="lg:col-span-3 relative">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -423,12 +449,14 @@
                     </button>
                 </div>
 
+                <!-- Search Results Modal -->
                 <div id="searchResultsModal" class="search-results-modal">
                     <div class="search-results-content scrollbar-custom">
                         <button id="searchCloseButton" class="search-close-button">✕</button>
                         <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Search Results</h3>
                         <div id="searchResultsList" class="space-y-3">
-                            </div>
+                            <!-- Search results will be populated here by JavaScript -->
+                        </div>
                         <p id="noSearchResults" class="text-center text-gray-500 mt-4 hidden">No results found.</p>
                     </div>
                 </div>
@@ -452,34 +480,49 @@
         const searchCloseButton = document.getElementById('searchCloseButton');
         const noSearchResults = document.getElementById('noSearchResults');
         
-        // Pagination elements
         const prevPageButton = document.getElementById('prevPageButton');
         const nextPageButton = document.getElementById('nextPageButton');
         const pageInfo = document.getElementById('pageInfo');
 
-        // Array to store messages
         let messages = [];
-        // Maximum number of messages allowed on a single page
         const messagesPerPage = 30; 
-        // Current page number (0-indexed)
         let currentPage = 0;
-        // Variable to store the currently dragged message's index
         let draggedItemIndex = null;
 
         /**
-         * Loads messages from localStorage on page load.
-         * Updates the message list and UI elements accordingly.
+         * Loads messages from localStorage, ensuring each has copyCount and timestamp.
          */
         function loadMessages() {
             const storedMessages = localStorage.getItem('messages');
             if (storedMessages) {
-                messages = JSON.parse(storedMessages);
+                try {
+                    let parsedMessages = JSON.parse(storedMessages);
+                    if (!Array.isArray(parsedMessages)) {
+                        parsedMessages = [];
+                    }
+                    messages = parsedMessages.map((msg, index) => {
+                        const baseTimestamp = Date.now(); // Fallback timestamp base
+                        if (typeof msg === 'string') { // Handle very old format
+                            return {
+                                name: msg.substring(0, 20) + (msg.length > 20 ? '...' : ''),
+                                content: msg,
+                                timestamp: baseTimestamp - (parsedMessages.length - index) * 1000, // Ensure some uniqueness
+                                copyCount: 0
+                            };
+                        }
+                        return {
+                            ...msg,
+                            copyCount: msg.copyCount || 0,
+                            timestamp: msg.timestamp || (baseTimestamp - (parsedMessages.length - index) * 1000)
+                        };
+                    });
+                } catch (e) {
+                    console.error("Error parsing messages from localStorage:", e);
+                    messages = [];
+                }
             }
-            updateMessageList();
+            updateMessageList(); // Will sort and render
             updatePaginationControls();
-            // Disable save button if message input is empty or current page is full
-            // Note: messages.length >= messagesPerPage is for the current page, not total messages.
-            // The total message limit is now dynamic with pages.
             saveButton.disabled = messageInput.value.length === 0;
         }
 
@@ -487,58 +530,74 @@
          * Saves the current messages array to localStorage.
          */
         function saveMessages() {
-            localStorage.setItem('messages', JSON.stringify(messages));
+            try {
+                localStorage.setItem('messages', JSON.stringify(messages));
+            } catch (e) {
+                console.error("Error saving messages to localStorage:", e);
+                showNotification('Error: Could not save. Storage might be full.');
+            }
         }
 
         /**
-         * Displays a floating notification with the given message text.
-         * @param {string} messageText - The text to display in the notification.
+         * Displays a floating notification.
          */
         function showNotification(messageText) {
             const notification = document.createElement('div');
             notification.className = 'floating-notification';
             notification.textContent = messageText;
             document.body.appendChild(notification);
-
-            // Hide and remove the notification after a delay
             setTimeout(() => {
-                notification.style.animation = 'notificationSlide 0.4s ease reverse';
-                setTimeout(() => notification.remove(), 400);
+                if (document.body.contains(notification)) {
+                    notification.style.animationName = 'notificationSlideOut'; // Assuming you add a slideOut animation
+                     notification.style.animationDuration = '0.4s';
+                     notification.style.animationTimingFunction = 'ease';
+                     notification.style.animationFillMode = 'forwards';
+
+                    setTimeout(() => {
+                         if (document.body.contains(notification)) {
+                            notification.remove();
+                         }
+                    }, 400);
+                }
             }, 2000);
         }
+         // Add a keyframes rule for notificationSlideOut if it doesn't exist
+        const styleSheet = document.styleSheets[0];
+        try {
+            styleSheet.insertRule(`
+                @keyframes notificationSlideOut {
+                    from { opacity: 1; transform: translateX(0); }
+                    to { opacity: 0; transform: translateX(100%); }
+                }
+            `, styleSheet.cssRules.length);
+        } catch (e) {
+            console.warn("Could not insert CSS rule for notificationSlideOut", e);
+        }
+
 
         /**
-         * Displays a modal for the user to input a name for the message.
-         * @param {string} messageText - The content of the message to be named.
+         * Creates a message object with name, content, timestamp, and initial copyCount.
          */
         function showNameInputModal(messageText) {
+            const existingOverlay = document.querySelector('.modal-overlay');
+            if (existingOverlay) existingOverlay.remove();
+
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
-            
             const modal = document.createElement('div');
             modal.className = 'modal-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-3xl p-8 max-w-md w-full mx-4';
             modal.innerHTML = `
                 <div class="text-center mb-6">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span class="text-2xl">🏷️</span>
-                    </div>
+                    <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center"><span class="text-2xl">🏷️</span></div>
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">Name Your Message</h3>
                     <p class="text-gray-600 text-sm mb-4">Give your message a memorable name</p>
-                    <input 
-                        type="text" 
-                        id="messageNameInput" 
-                        class="input-field w-full p-3 rounded-xl focus:outline-none" 
-                        placeholder="Enter message name..."
-                        maxlength="30"
-                    />
+                    <input type="text" id="messageNameInput" class="input-field w-full p-3 rounded-xl focus:outline-none" placeholder="Enter message name..." maxlength="30"/>
                     <p class="text-xs text-gray-500 mt-2">Max 30 characters</p>
                 </div>
                 <div class="flex space-x-3">
                     <button class="cancel-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Cancel</button>
                     <button class="primary-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Save</button>
-                </div>
-            `;
-
+                </div>`;
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
 
@@ -546,560 +605,538 @@
             const saveBtn = modal.querySelector('.primary-button');
             const cancelBtn = modal.querySelector('.cancel-button');
 
-            // Auto-focus and suggest a name based on the message content
             nameInput.focus();
             const suggestedName = messageText.substring(0, 25) + (messageText.length > 25 ? '...' : '');
             nameInput.value = suggestedName;
-            nameInput.select(); // Select the suggested text for easy editing
+            nameInput.select();
 
-            // Event listener for saving the message
             saveBtn.addEventListener('click', () => {
                 const name = nameInput.value.trim();
                 if (name) {
                     const messageObj = {
                         name: name,
                         content: messageText,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
+                        copyCount: 0 // Initialize copyCount
                     };
-                    messages.push(messageObj); // Add new message to the array
-                    // After adding, navigate to the last page if it's a new page
-                    currentPage = Math.floor(messages.length / messagesPerPage);
-                    if (messages.length % messagesPerPage === 0 && messages.length > 0) {
-                        currentPage = Math.max(0, Math.ceil(messages.length / messagesPerPage) - 1);
-                    }
-                    
-                    updateMessageList(); // Update the displayed list
-                    saveMessages(); // Save to localStorage
-                    messageInput.value = ''; // Clear input field
+                    messages.push(messageObj);
+                    currentPage = Math.floor((messages.length - 1) / messagesPerPage); // Go to new message's page
+                    updateMessageList();
+                    saveMessages();
+                    messageInput.value = '';
                     charCount.textContent = `0 characters`;
-                    charCount.className = 'text-sm text-gray-500 font-medium';
-                    saveButton.disabled = true; // Disable save button
-                    showNotification('Message saved successfully! ✨'); // Show success notification
-                    overlay.remove(); // Close the modal
-                    updatePaginationControls(); // Update pagination after saving
+                    saveButton.disabled = true;
+                    showNotification('Message saved successfully! ✨');
+                    if (document.body.contains(overlay)) overlay.remove();
+                    updatePaginationControls();
                 } else {
-                    // If name is empty, highlight input and refocus
                     nameInput.focus();
                     nameInput.style.borderColor = '#ef4444';
                     setTimeout(() => nameInput.style.borderColor = '', 2000);
                 }
             });
 
-            // Event listener for canceling the modal
-            cancelBtn.addEventListener('click', () => overlay.remove());
-            // Close modal if clicking outside the modal content
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.remove();
-            });
-
-            // Handle Enter key press to save the message
-            nameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    saveBtn.click();
-                }
-            });
+            cancelBtn.addEventListener('click', () => { if (document.body.contains(overlay)) overlay.remove(); });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay && document.body.contains(overlay)) overlay.remove(); });
+            nameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveBtn.click(); });
         }
 
         /**
-         * Displays a warning modal for confirming message deletion.
-         * @param {number} index - The index of the message to be deleted.
+         * Shows a confirmation modal before deleting a message.
          */
-        function showWarningMessage(index) {
+        function showWarningMessage(globalIndex) {
+            const existingOverlay = document.querySelector('.modal-overlay');
+            if (existingOverlay) existingOverlay.remove();
+            
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
-            
             const modal = document.createElement('div');
             modal.className = 'modal-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-3xl p-8 max-w-sm w-full mx-4 text-center';
+            const messageName = messages[globalIndex] && messages[globalIndex].name ? messages[globalIndex].name : 'this message';
             modal.innerHTML = `
                 <div class="mb-6">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                        <span class="text-2xl">🗑️</span>
-                    </div>
+                    <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center"><span class="text-2xl">🗑️</span></div>
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">Delete Message</h3>
-                    <p class="text-gray-600">Are you sure you want to delete "${messages[index].name || 'this message'}"? This action cannot be undone.</p>
+                    <p class="text-gray-600">Are you sure you want to delete "${messageName}"? This action cannot be undone.</p>
                 </div>
                 <div class="flex space-x-3">
                     <button class="cancel-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Cancel</button>
                     <button class="delete-button action-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Delete</button>
-                </div>
-            `;
-
+                </div>`;
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
 
-            const deleteButton = modal.querySelector('.delete-button');
-            const cancelButton = modal.querySelector('.cancel-button');
-
-            // Event listener for confirming deletion
-            deleteButton.addEventListener('click', () => {
-                deleteMessage(index); // Delete the message
-                overlay.remove(); // Close the modal
-                showNotification('Message deleted successfully!'); // Show success notification
+            modal.querySelector('.delete-button').addEventListener('click', () => {
+                deleteMessage(globalIndex);
+                if (document.body.contains(overlay)) overlay.remove();
+                showNotification('Message deleted successfully!');
             });
-            
-            // Event listener for canceling deletion
-            cancelButton.addEventListener('click', () => overlay.remove());
-            // Close modal if clicking outside the modal content
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.remove();
-            });
+            modal.querySelector('.cancel-button').addEventListener('click', () => { if (document.body.contains(overlay)) overlay.remove(); });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay && document.body.contains(overlay)) overlay.remove(); });
         }
-
-        // Event listener for message input to update character count and button state
+        
         messageInput.addEventListener('input', () => {
             const currentLength = messageInput.value.length;
             charCount.textContent = `${currentLength} characters`;
-            
-            // Enable/disable save button based on input length
             saveButton.disabled = currentLength === 0;
         });
 
-        // Event listener for save button click
         saveButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
-            // Only show name input modal if message is not empty
-            if (message) {
-                showNameInputModal(message);
-            }
+            if (message) showNameInputModal(message);
         });
 
         /**
-         * Updates the displayed message list, distributing messages across three columns.
-         * Also sets up drag and drop event listeners for each message container.
+         * Generates the content for the copy count badge.
+         * Uses standard numbers for clarity.
+         * @param {number} count - The copy count.
+         * @returns {string} The string for the badge.
+         */
+        function getCopyBadgeContent(count) {
+            if (count <= 0) return ''; 
+            return count > 99 ? '99+' : count.toString();
+        }
+
+        /**
+         * Updates the displayed message list: sorts, paginates, and renders messages.
          */
         function updateMessageList() {
-            // Clear existing messages from all columns
             messageColumn1.innerHTML = '';
             messageColumn2.innerHTML = '';
             messageColumn3.innerHTML = '';
             
+            // Sort messages: by copyCount descending, then by timestamp descending (newest first)
+            messages.sort((a, b) => {
+                const countA = a.copyCount || 0;
+                const countB = b.copyCount || 0;
+                if (countB !== countA) {
+                    return countB - countA;
+                }
+                return (b.timestamp || 0) - (a.timestamp || 0);
+            });
+
             const startIdx = currentPage * messagesPerPage;
             const endIdx = startIdx + messagesPerPage;
             const messagesToDisplay = messages.slice(startIdx, endIdx);
 
-            messagesToDisplay.forEach((msgObj, localIndex) => { // localIndex is 0-29 for current page
-                // Handle both old string format and new object format for backward compatibility
-                const isOldFormat = typeof msgObj === 'string';
-                const messageName = isOldFormat ? msgObj.substring(0, 20) + (msgObj.length > 20 ? '...' : '') : msgObj.name;
-                const messageContent = isOldFormat ? msgObj : msgObj.content;
+            messagesToDisplay.forEach((msgObj, localIndex) => { 
+                const globalIndex = messages.indexOf(msgObj); // Get current global index after sort
+
+                // Ensure msgObj is well-formed
+                if (!msgObj || typeof msgObj.name === 'undefined' || typeof msgObj.content === 'undefined') {
+                    console.warn("Malformed message object during render:", msgObj);
+                    messages[globalIndex] = { name: "Error: Invalid Data", content: "", timestamp: Date.now(), copyCount: 0 };
+                    msgObj = messages[globalIndex];
+                }
+
+                const messageName = msgObj.name;
+                const messageContent = msgObj.content;
+                const copyCount = msgObj.copyCount || 0;
+                const badgeContent = getCopyBadgeContent(copyCount);
                 
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container relative';
-                messageContainer.draggable = true; // Make message container draggable
-                // Store the global index, not local, for accurate array manipulation
-                messageContainer.dataset.index = startIdx + localIndex; 
+                messageContainer.draggable = true; 
+                messageContainer.dataset.globalId = msgObj.timestamp; // Use timestamp as a more stable ID for drag-drop
 
-                // Drag and Drop Event Listeners for individual messages
                 messageContainer.addEventListener('dragstart', (e) => {
-                    draggedItemIndex = parseInt(e.target.dataset.index); // Get global index
+                    // Find the index of the item with this timestamp in the currently sorted `messages` array
+                    const idToDrag = e.target.closest('.message-container').dataset.globalId;
+                    draggedItemIndex = messages.findIndex(m => m.timestamp.toString() === idToDrag);
+                    if(draggedItemIndex === -1) {
+                        console.error("Could not find dragged item by ID:", idToDrag);
+                        e.preventDefault(); // Prevent drag if item not found
+                        return;
+                    }
                     e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('text/plain', draggedItemIndex); // Pass the global index
+                    e.dataTransfer.setData('text/plain', draggedItemIndex); 
                     setTimeout(() => {
-                        messageContainer.classList.add('dragging'); // Add dragging class after a short delay
+                         if (document.body.contains(messageContainer)) messageContainer.classList.add('dragging');
                     }, 0);
                 });
 
-                // Add dragenter event listener for target glow
                 messageContainer.addEventListener('dragenter', (e) => {
                     e.preventDefault();
-                    // Ensure we are not dragging over ourselves and that a drag is in progress
-                    if (draggedItemIndex !== null && parseInt(messageContainer.dataset.index) !== draggedItemIndex) {
-                        messageContainer.classList.add('drag-over-target');
+                    const targetContainer = e.target.closest('.message-container');
+                    if (targetContainer && targetContainer.dataset.globalId !== messageContainer.dataset.globalId) {
+                         targetContainer.classList.add('drag-over-target');
                     }
                 });
 
-                // Add dragleave event listener to remove target glow
                 messageContainer.addEventListener('dragleave', (e) => {
-                    // Check if the mouse is truly leaving the element and not just entering a child
                     const relatedTarget = e.relatedTarget;
-                    if (relatedTarget && messageContainer.contains(relatedTarget)) {
-                        return; // Still inside the draggable area or its children
+                    const targetContainer = e.target.closest('.message-container');
+                    if (targetContainer && (!relatedTarget || !targetContainer.contains(relatedTarget))) {
+                        targetContainer.classList.remove('drag-over-target');
                     }
-                    messageContainer.classList.remove('drag-over-target');
                 });
 
                 messageContainer.addEventListener('dragend', () => {
-                    messageContainer.classList.remove('dragging'); // Remove dragging class
-                    // Ensure all drag-over-target classes are removed from all elements
+                    if (document.body.contains(messageContainer)) messageContainer.classList.remove('dragging');
                     document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
-                    draggedItemIndex = null; // Reset dragged item index
+                    draggedItemIndex = null; 
                 });
 
-                // Create the main message button for copying
                 const button = document.createElement('button');
-                button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[50px] flex items-center pr-20';
+                button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[60px] flex items-center pr-20';
                 button.innerHTML = `
                     <div class="w-full">
                         <div class="font-semibold text-gray-800 truncate text-sm">${messageName}</div>
-                        <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 20 ? messageContent.substring(0, 20) + '...' : messageContent}</div>
+                        <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 30 ? messageContent.substring(0, 30) + '...' : messageContent}</div>
                     </div>
+                    ${badgeContent ? `<span class="copy-count-badge">${badgeContent}</span>` : ''}
                 `;
-                button.title = `${messageName}\n\n${messageContent}`; // Full content on hover
+                button.title = `${messageName}\n\n${messageContent}`; 
                 button.addEventListener('click', () => {
-                    copyToClipboard(messageContent, button); // Copy content to clipboard
-                    showNotification('Message copied to clipboard! 📋'); // Show notification
+                    copyToClipboard(msgObj, button); 
                 });
 
-                // Create container for action buttons (edit, delete)
                 const actionsContainer = document.createElement('div');
                 actionsContainer.className = 'message-actions';
-
-                // Create Edit button
                 const editButton = document.createElement('button');
                 editButton.className = 'edit-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
                 editButton.textContent = 'Edit';
                 editButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent button click from triggering copy
-                    editMessage(startIdx + localIndex, messageContainer, button); // Pass global index
+                    e.stopPropagation(); 
+                    // Find current global index for editing, as it might have changed due to sorting
+                    const currentGlobalIndex = messages.findIndex(m => m.timestamp === msgObj.timestamp);
+                    if (currentGlobalIndex !== -1) {
+                        editMessage(currentGlobalIndex, messageContainer);
+                    }
                 });
-
-                // Create Delete button
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'delete-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
                 deleteButton.textContent = 'Del';
                 deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent button click from triggering copy
-                    showWarningMessage(startIdx + localIndex); // Pass global index
+                    e.stopPropagation(); 
+                    const currentGlobalIndex = messages.findIndex(m => m.timestamp === msgObj.timestamp);
+                     if (currentGlobalIndex !== -1) {
+                        showWarningMessage(currentGlobalIndex);
+                    }
                 });
-
-                // Append action buttons to their container
                 actionsContainer.appendChild(editButton);
                 actionsContainer.appendChild(deleteButton);
-
-                // Append button and actions to the message container
                 messageContainer.appendChild(button);
                 messageContainer.appendChild(actionsContainer);
                 
-                // Distribute messages across columns (10 messages per column)
-                if (localIndex < 10) {
-                    messageColumn1.appendChild(messageContainer);
-                } else if (localIndex < 20) {
-                    messageColumn2.appendChild(messageContainer);
-                } else { // localIndex >= 20 and < 30
-                    messageColumn3.appendChild(messageContainer);
-                }
+                if (localIndex < 10) messageColumn1.appendChild(messageContainer);
+                else if (localIndex < 20) messageColumn2.appendChild(messageContainer);
+                else messageColumn3.appendChild(messageContainer);
             });
-            messageCount.textContent = `${messages.length} total messages`; // Update total count
+            messageCount.textContent = `${messages.length} total messages`; 
+            updatePaginationControls();
         }
 
         /**
-         * Copies text to the clipboard. Provides a fallback for insecure contexts.
-         * @param {string} text - The text to copy.
-         * @param {HTMLElement} button - The button element that triggered the copy, used for error styling.
+         * Copies text, increments count, saves, and re-renders.
+         * @param {object} messageObjectToCopy - The message object.
+         * @param {HTMLElement} buttonElement - The button clicked.
          */
-        async function copyToClipboard(text, button) {
+        async function copyToClipboard(messageObjectToCopy, buttonElement) {
+            const textToCopy = messageObjectToCopy.content;
             try {
-                // Use modern Clipboard API if available and secure
                 if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(text);
+                    await navigator.clipboard.writeText(textToCopy);
                 } else {
-                    // Fallback for older browsers or insecure contexts
                     const textarea = document.createElement('textarea');
-                    textarea.value = text;
+                    textarea.value = textToCopy;
+                    textarea.style.position = 'fixed'; textarea.style.left = '-9999px';
                     document.body.appendChild(textarea);
                     textarea.select();
-                    try {
-                        document.execCommand('copy'); // Deprecated but widely supported fallback
-                    } catch (err) {
-                        throw new Error('Fallback copy failed');
-                    } finally {
-                        document.body.removeChild(textarea); // Clean up textarea
-                    }
+                    const successful = document.execCommand('copy');
+                    if (document.body.contains(textarea)) document.body.removeChild(textarea);
+                    if (!successful) throw new Error('Fallback copy command failed');
                 }
+                
+                // Increment copy count
+                const originalMessageIndex = messages.findIndex(m => m.timestamp === messageObjectToCopy.timestamp);
+                if (originalMessageIndex !== -1) {
+                    messages[originalMessageIndex].copyCount = (messages[originalMessageIndex].copyCount || 0) + 1;
+                    saveMessages();
+                    updateMessageList(); // Re-sort and re-render
+                    showNotification('Message copied! Count updated. ✨');
+                } else {
+                     showNotification('Message copied! (Original not found for count update)');
+                }
+
             } catch (err) {
                 console.error('Failed to copy:', err);
-                button.classList.add('copy-failed'); // Add error styling
-                debugMessage.textContent = 'Copy failed. Ensure the page is served over HTTPS or try a different browser.';
-                debugMessage.classList.remove('hidden'); // Show debug message
-                // Remove error styling and debug message after a delay
-                setTimeout(() => {
-                    button.classList.remove('copy-failed');
-                    debugMessage.classList.add('hidden');
-                }, 3000);
+                if (buttonElement && document.body.contains(buttonElement)) {
+                    buttonElement.classList.add('copy-failed');
+                    setTimeout(() => { if (document.body.contains(buttonElement)) buttonElement.classList.remove('copy-failed'); }, 3000);
+                }
+                debugMessage.textContent = 'Copy failed. Ensure HTTPS or try another browser.';
+                debugMessage.classList.remove('hidden'); 
+                setTimeout(() => { debugMessage.classList.add('hidden'); }, 5000);
             }
         }
 
         /**
-         * Enables editing of an existing message. Replaces the message display with input fields.
-         * @param {number} index - The index of the message to edit.
-         * @param {HTMLElement} container - The HTML container element of the message.
-         * @param {HTMLElement} messageButton - The original message button element.
+         * Enables editing of an existing message.
+         * @param {number} globalIndex - The current global index of the message in the sorted `messages` array.
+         * @param {HTMLElement} container - The HTML container of the message.
          */
-        function editMessage(index, container, messageButton) {
-            const currentMessage = messages[index];
-            // Determine if message is in old string format or new object format
-            const isOldFormat = typeof currentMessage === 'string';
-            const currentContent = isOldFormat ? currentMessage : currentMessage.content;
-            const currentName = isOldFormat ? currentMessage.substring(0, 20) : currentMessage.name;
+        function editMessage(globalIndex, container) {
+            const currentMessage = messages[globalIndex];
+            if (!currentMessage) {
+                console.error("Message to edit not found at index:", globalIndex);
+                return;
+            }
+            const currentContent = currentMessage.content;
+            const currentName = currentMessage.name;
             
-            container.innerHTML = ''; // Clear current content
-            container.className = 'bg-white p-4 rounded-2xl border-2 border-blue-200'; // Apply editing styles
+            container.draggable = false;
+            container.innerHTML = ''; 
+            container.className = 'bg-white p-4 rounded-2xl border-2 border-indigo-300 shadow-lg'; 
             
-            // Create input field for message name
             const nameInput = document.createElement('input');
-            nameInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none mb-2 text-sm';
-            nameInput.value = currentName;
-            nameInput.placeholder = 'Message name...';
-            nameInput.maxLength = 30; // Limit name length
-            
-            // Create textarea for message content
+            nameInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none mb-2 text-sm border-gray-300';
+            nameInput.value = currentName; nameInput.placeholder = 'Message name...'; nameInput.maxLength = 30; 
             const contentInput = document.createElement('textarea');
-            contentInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none resize-none mb-2 text-sm';
-            contentInput.value = currentContent;
-            contentInput.rows = 2; // Initial rows for textarea
-            contentInput.placeholder = 'Edit your message here... 😊�';
+            contentInput.className = 'input-field w-full p-2 rounded-lg focus:outline-none resize-none mb-2 text-sm border-gray-300';
+            contentInput.value = currentContent; contentInput.rows = 3; contentInput.placeholder = 'Edit message...';
 
-            // Create button container for save and cancel
             const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'flex space-x-2';
-
-            // Create Save Edit button
+            buttonContainer.className = 'flex space-x-2 mt-2';
             const saveEditButton = document.createElement('button');
-            saveEditButton.className = 'save-edit-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
+            saveEditButton.className = 'save-edit-button action-button text-white px-3 py-1.5 rounded-lg font-medium text-xs flex-1';
             saveEditButton.textContent = '💾 Save';
             saveEditButton.addEventListener('click', () => {
                 const newName = nameInput.value.trim();
                 const newContent = contentInput.value.trim();
                 if (newName && newContent) {
-                    // Update message object with new name and content
-                    messages[index] = {
-                        name: newName,
-                        content: newContent,
-                        timestamp: Date.now()
-                    };
-                    updateMessageList(); // Refresh the message list
-                    saveMessages(); // Save changes to localStorage
-                    showNotification('Message updated successfully! ✨'); // Show success notification
+                    messages[globalIndex].name = newName;
+                    messages[globalIndex].content = newContent;
+                    // Note: timestamp and copyCount are preserved
+                    updateMessageList(); 
+                    saveMessages(); 
+                    showNotification('Message updated! ✨'); 
                 } else {
-                    showNotification('Name and message cannot be empty.'); // Show error notification
+                    showNotification('Name and message cannot be empty.'); 
                 }
             });
-
-            // Create Cancel button
             const cancelButton = document.createElement('button');
-            cancelButton.className = 'cancel-button action-button text-white px-3 py-1 rounded-lg font-medium text-xs flex-1';
+            cancelButton.className = 'cancel-button action-button text-white px-3 py-1.5 rounded-lg font-medium text-xs flex-1';
             cancelButton.textContent = '❌ Cancel';
-            cancelButton.addEventListener('click', () => updateMessageList()); // Revert to original display
-
-            // Append buttons to their container
-            buttonContainer.appendChild(saveEditButton);
-            buttonContainer.appendChild(cancelButton);
-            
-            // Append input fields and button container to the message container
-            container.appendChild(nameInput);
-            container.appendChild(contentInput);
-            container.appendChild(buttonContainer);
-            
-            // Focus on the name input and place cursor at the end
-            nameInput.focus();
-            nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length);
+            cancelButton.addEventListener('click', () => updateMessageList()); 
+            buttonContainer.appendChild(saveEditButton); buttonContainer.appendChild(cancelButton);
+            container.appendChild(nameInput); container.appendChild(contentInput); container.appendChild(buttonContainer);
+            nameInput.focus(); nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length);
         }
 
         /**
-         * Deletes a message from the messages array and updates the UI.
-         * @param {number} index - The index of the message to delete.
+         * Deletes a message and updates UI.
+         * @param {number} globalIndex - The current global index of the message.
          */
-        function deleteMessage(index) {
-            messages.splice(index, 1); // Remove message from array
-            // Adjust current page if the last message on a page is deleted
-            const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
-            if (currentPage >= totalPages) {
-                currentPage = Math.max(0, totalPages - 1);
+        function deleteMessage(globalIndex) {
+            if (globalIndex >= 0 && globalIndex < messages.length) {
+                messages.splice(globalIndex, 1); 
+                const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
+                if (currentPage >= totalPages && currentPage > 0) {
+                    currentPage = totalPages - 1;
+                }
+                updateMessageList(); 
+                saveMessages(); 
+                updatePaginationControls(); 
+                saveButton.disabled = messageInput.value.length === 0;
+            } else {
+                console.error("Invalid index for delete:", globalIndex);
             }
-            updateMessageList(); // Refresh the message list
-            saveMessages(); // Save changes to localStorage
-            updatePaginationControls(); // Update pagination after deletion
-            // Re-evaluate save button disabled state
-            saveButton.disabled = messageInput.value.length === 0;
         }
 
         // --- Drag and Drop Logic ---
-
-        // Get all drop zone elements
         const dropZones = document.querySelectorAll('.drop-zone');
-
         dropZones.forEach(zone => {
             zone.addEventListener('dragover', (e) => {
-                e.preventDefault(); // Allow drop
+                e.preventDefault(); 
                 e.dataTransfer.dropEffect = 'move';
-                // Find the closest message container to potentially insert before
-                const targetMessage = e.target.closest('.message-container');
-                document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
-                if (targetMessage && parseInt(targetMessage.dataset.index) !== draggedItemIndex) {
-                    targetMessage.classList.add('drag-over-target');
+                const targetMessageContainer = e.target.closest('.message-container');
+                document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
+                if (targetMessageContainer && targetMessageContainer.dataset.globalId !== (messages[draggedItemIndex]?.timestamp.toString())) {
+                    targetContainer.classList.add('drag-over-target');
                 }
             });
-
             zone.addEventListener('dragenter', (e) => {
                 e.preventDefault();
-                zone.classList.add('drag-over'); // Add visual feedback for the column
+                if (draggedItemIndex !== null) zone.classList.add('drag-over');
             });
-
             zone.addEventListener('dragleave', (e) => {
-                // Check if the mouse is truly leaving the drop zone and not just entering a child
                 const relatedTarget = e.relatedTarget;
-                if (relatedTarget && zone.contains(relatedTarget)) {
-                    return; // Still inside the drop zone or its children
+                if (!zone.contains(relatedTarget)) {
+                    zone.classList.remove('drag-over');
+                    document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
                 }
-                zone.classList.remove('drag-over'); // Remove visual feedback for the column
-                // Also remove target glow from any message if leaving the column
-                document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
             });
-
             zone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                zone.classList.remove('drag-over'); // Remove visual feedback from the column
-                document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target')); // Remove target glow
+                zone.classList.remove('drag-over'); 
+                document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
 
-                const draggedGlobalIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                const draggedMessage = messages[draggedGlobalIndex];
+                if (draggedItemIndex === null || typeof messages[draggedItemIndex] === 'undefined') {
+                     console.error("Drag drop error: draggedItemIndex invalid or message undefined", draggedItemIndex);
+                     draggedItemIndex = null;
+                     return;
+                }
 
-                // Remove the dragged message from its original position
-                messages.splice(draggedGlobalIndex, 1);
+                const draggedMessageObject = messages[draggedItemIndex];
+                messages.splice(draggedItemIndex, 1); // Remove from old position
 
-                // Determine the new global position within the target column
                 const targetElement = e.target.closest('.message-container');
                 let newGlobalInsertIndex;
 
                 if (targetElement) {
-                    // Dropped onto another message, insert before it
-                    const targetGlobalIndex = parseInt(targetElement.dataset.index);
-                    // If the dragged message was before the target in the original array,
-                    // and we removed it, the target's index might effectively shift.
-                    // We need to find the correct insertion point in the *modified* array.
-                    newGlobalInsertIndex = messages.findIndex(msg => msg.timestamp === messages[targetGlobalIndex]?.timestamp && msg.name === messages[targetGlobalIndex]?.name);
-                    if (newGlobalInsertIndex === -1 && targetGlobalIndex < messages.length) {
-                         // Fallback: if exact object not found (e.g., due to splice), try to insert at the original target's position
-                         newGlobalInsertIndex = targetGlobalIndex;
-                    } else if (newGlobalInsertIndex === -1) {
-                         // If target was the last element and removed, append to end
-                         newGlobalInsertIndex = messages.length;
-                    }
+                    const targetId = targetElement.dataset.globalId;
+                    const actualTargetIndexInModifiedArray = messages.findIndex(m => m.timestamp.toString() === targetId);
                     
+                    if (actualTargetIndexInModifiedArray !== -1) {
+                         newGlobalInsertIndex = actualTargetIndexInModifiedArray;
+                    } else {
+                        // Fallback: if target not found (e.g. it was the dragged item itself, which is now removed)
+                        // or if dropping into empty space. Determine by column.
+                        newGlobalInsertIndex = determineDropIndexInColumn(zone, e.clientY);
+                    }
                 } else {
-                    // Dropped into an empty column or not on a specific message, append to the column's section
-                    // Calculate the start index for the target column's section on the current page
-                    let columnBaseIndexOnPage;
-                    if (zone.id === 'messageColumn1') {
-                        columnBaseIndexOnPage = 0;
-                    } else if (zone.id === 'messageColumn2') {
-                        columnBaseIndexOnPage = 10;
-                    } else if (zone.id === 'messageColumn3') {
-                        columnBaseIndexOnPage = 20;
-                    }
-                    // Calculate the global index for appending to this column on the current page
-                    newGlobalInsertIndex = (currentPage * messagesPerPage) + columnBaseIndexOnPage + zone.children.length;
-                    
-                    // Ensure the index doesn't exceed the current messages array length
-                    newGlobalInsertIndex = Math.min(newGlobalInsertIndex, messages.length);
+                     newGlobalInsertIndex = determineDropIndexInColumn(zone, e.clientY);
                 }
                 
-                messages.splice(newGlobalInsertIndex, 0, draggedMessage);
-                
-                updateMessageList();
+                messages.splice(newGlobalInsertIndex, 0, draggedMessageObject);
+                // Drag and drop overrides sort temporarily. The next sort in updateMessageList will re-apply copy count sort.
+                updateMessageList(); // This will re-sort by copyCount primarily
                 saveMessages();
-                updatePaginationControls();
+                draggedItemIndex = null;
             });
         });
+        
+        function determineDropIndexInColumn(zone, clientY) {
+            const messagesInZone = Array.from(zone.querySelectorAll('.message-container'));
+            let insertAtIndexWithinColumn = messagesInZone.length; // Default to end of column
+
+            for(let i=0; i < messagesInZone.length; i++){
+                const rect = messagesInZone[i].getBoundingClientRect();
+                if(clientY < rect.top + rect.height / 2){
+                    insertAtIndexWithinColumn = i;
+                    break;
+                }
+            }
+
+            // Find the global index of the message that will be *after* our insertion point in this column
+            let baseGlobalIndex = 0;
+            // This needs to map column position to global index in the *currently displayed (sorted) messages array*
+            // This is complex because items are distributed. For simplicity, we'll append to current page's view or specific column.
+            // A robust way is to find the global index of the last item in the column (if any) and add 1.
+            if (insertAtIndexWithinColumn < messagesInZone.length) {
+                const nextItemId = messagesInZone[insertAtIndexWithinColumn].dataset.globalId;
+                baseGlobalIndex = messages.findIndex(m => m.timestamp.toString() === nextItemId);
+                if (baseGlobalIndex === -1) baseGlobalIndex = messages.length; // Fallback
+            } else {
+                 // If appending to the end of a column, find the last item in that column on the current page
+                 // and insert after it in the global list.
+                 // This logic can be refined, for now, it might just append to the end of all messages if not precise.
+                 // A robust way is to find the global index of the last item in the column (if any) and add 1.
+                 if (messagesInZone.length > 0) {
+                    const lastItemIdInZone = messagesInZone[messagesInZone.length - 1].dataset.globalId;
+                    const lastItemGlobalIndex = messages.findIndex(m => m.timestamp.toString() === lastItemIdInZone);
+                    baseGlobalIndex = (lastItemGlobalIndex !== -1) ? lastItemGlobalIndex + 1 : messages.length;
+                 } else {
+                    // If column is empty, find the global index for the start of this column's items on current page
+                    const pageStartIndex = currentPage * messagesPerPage;
+                    let itemsBeforeThisColumn = 0;
+                    if (zone.id === 'messageColumn2') itemsBeforeThisColumn = messageColumn1.children.length;
+                    else if (zone.id === 'messageColumn3') itemsBeforeThisColumn = messageColumn1.children.length + messageColumn2.children.length;
+                    baseGlobalIndex = Math.min(messages.length, pageStartIndex + itemsBeforeThisColumn);
+                 }
+            }
+            return Math.min(messages.length, baseGlobalIndex);
+        }
+
 
         // --- Search Logic ---
-
-        // Event listener for search input
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm.length > 0) {
-                const filteredMessages = messages.filter(msg => 
-                    (msg.name && msg.name.toLowerCase().includes(searchTerm)) ||
-                    (msg.content && msg.content.toLowerCase().includes(searchTerm))
-                );
-                displaySearchResults(filteredMessages);
+                // Split the search term into individual keywords
+                const keywords = searchTerm.split(' ').filter(word => word.length > 0);
+
+                const filteredMessages = messages.filter(msg => {
+                    const messageNameLower = (msg.name || '').toLowerCase();
+                    const messageContentLower = (msg.content || '').toLowerCase();
+
+                    // Check if ALL keywords are present in either the name or the content
+                    return keywords.every(keyword => 
+                        messageNameLower.includes(keyword) || messageContentLower.includes(keyword)
+                    );
+                });
+                displaySearchResults(filteredMessages, keywords); // Pass keywords for highlighting
             } else {
-                closeSearchResults(); // Hide modal if search term is empty
+                closeSearchResults(); 
             }
         });
 
-        // Event listener for closing search results modal
         searchCloseButton.addEventListener('click', closeSearchResults);
-        searchResultsModal.addEventListener('click', (e) => {
-            // Close modal only if clicking directly on the overlay, not its content
-            if (e.target === searchResultsModal) {
-                closeSearchResults();
-            }
-        });
+        searchResultsModal.addEventListener('click', (e) => { if (e.target === searchResultsModal) closeSearchResults(); });
 
         /**
-         * Displays the search results in a modal overlay.
-         * @param {Array<Object>} results - An array of message objects matching the search.
+         * Highlights keywords within a given text.
+         * @param {string} text The original text.
+         * @param {string[]} keywords An array of keywords to highlight.
+         * @returns {string} The text with keywords wrapped in highlight spans.
          */
-        function displaySearchResults(results) {
-            searchResultsList.innerHTML = ''; // Clear previous results
-            
-            if (results.length === 0) {
-                noSearchResults.classList.remove('hidden');
-            } else {
-                noSearchResults.classList.add('hidden');
-                results.forEach(msg => {
-                    const resultItem = document.createElement('div');
-                    resultItem.className = 'search-result-item';
-                    resultItem.innerHTML = `
-                        <div class="search-result-name">${msg.name}</div>
-                        <div class="search-result-content">${msg.content}</div>
-                    `;
-                    resultItem.addEventListener('click', () => {
-                        copyToClipboard(msg.content, resultItem);
-                        showNotification('Message copied from search! 📋');
-                        closeSearchResults();
-                    });
-                    searchResultsList.appendChild(resultItem);
-                });
-            }
-            searchResultsModal.classList.add('active'); // Show the modal
+        function highlightKeywords(text, keywords) {
+            let highlightedText = text;
+            keywords.forEach(keyword => {
+                const regex = new RegExp(`(${keyword})`, 'gi'); // Case-insensitive global search
+                highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
+            });
+            return highlightedText;
         }
 
-        /**
-         * Hides the search results modal and clears the search input.
-         */
+        function displaySearchResults(results, keywords = []) { // Added keywords parameter
+            searchResultsList.innerHTML = ''; 
+            noSearchResults.classList.toggle('hidden', results.length > 0);
+            results.forEach(msg => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+
+                // Apply highlighting to name and content
+                const highlightedName = highlightKeywords(msg.name || 'Untitled', keywords);
+                const highlightedContent = highlightKeywords((msg.content || '').substring(0,100), keywords);
+
+                resultItem.innerHTML = `
+                    <div class="search-result-name">${highlightedName}</div>
+                    <div class="search-result-content">${highlightedContent}${(msg.content && msg.content.length > 100) ? '...' : ''}</div>`;
+                resultItem.addEventListener('click', () => {
+                    copyToClipboard(msg, resultItem); // msg is the full message object
+                    // No need to call showNotification here, copyToClipboard does it.
+                    closeSearchResults();
+                });
+                searchResultsList.appendChild(resultItem);
+            });
+            searchResultsModal.classList.add('active'); 
+        }
+
         function closeSearchResults() {
             searchResultsModal.classList.remove('active');
-            // searchInput.value = ''; // Do not clear search input so user can refine search
-            searchResultsList.innerHTML = ''; // Clear results
-            noSearchResults.classList.add('hidden'); // Hide no results message
+            searchResultsList.innerHTML = ''; 
+            noSearchResults.classList.add('hidden'); 
         }
 
         // --- Pagination Logic ---
-
-        /**
-         * Updates the state of pagination buttons and page information text.
-         */
         function updatePaginationControls() {
             const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
             pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages}`;
-
             prevPageButton.disabled = currentPage === 0;
             nextPageButton.disabled = currentPage >= totalPages - 1;
         }
 
-        // Event listener for Previous page button
         prevPageButton.addEventListener('click', () => {
-            if (currentPage > 0) {
-                currentPage--;
-                updateMessageList();
-                updatePaginationControls();
-            }
+            if (currentPage > 0) { currentPage--; updateMessageList(); }
         });
-
-        // Event listener for Next page button
         nextPageButton.addEventListener('click', () => {
             const totalPages = Math.ceil(messages.length / messagesPerPage);
-            if (currentPage < totalPages - 1) {
-                currentPage++;
-                updateMessageList();
-                updatePaginationControls();
-            }
+            if (currentPage < totalPages - 1) { currentPage++; updateMessageList(); }
         });
 
-        // Initialize messages when the page loads
-        loadMessages();
+        loadMessages(); // Initialize
     </script>
 </body>
 </html>
