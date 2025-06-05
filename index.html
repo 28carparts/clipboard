@@ -234,7 +234,6 @@
             position: absolute;
             bottom: 5px;
             right: 5px;
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Theme-aligned purple gradient */
             color: white;
             font-size: 12px; 
             font-weight: 600;
@@ -249,6 +248,24 @@
             line-height: 22px; /* Helps vertically center content */
         }
         
+        /* Specific color classes for badges */
+        .badge-color-0 { background: #E91E63; } /* Pink */
+        .badge-color-1 { background: #9C27B0; } /* Purple */
+        .badge-color-2 { background: #673AB7; } /* Deep Purple */
+        .badge-color-3 { background: #3F51B5; } /* Indigo */
+        .badge-color-4 { background: #2196F3; } /* Blue */
+        .badge-color-5 { background: #03A9F4; } /* Light Blue */
+        .badge-color-6 { background: #00BCD4; } /* Cyan */
+        .badge-color-7 { background: #009688; } /* Teal */
+        .badge-color-8 { background: #4CAF50; } /* Green */
+        .badge-color-9 { background: #8BC34A; } /* Light Green */
+        .badge-color-10 { background: #CDDC39; } /* Lime */
+        .badge-color-11 { background: #FFEB3B; } /* Yellow */
+        .badge-color-12 { background: #FFC107; } /* Amber */
+        .badge-color-13 { background: #FF9800; } /* Orange */
+        .badge-color-14 { background: #FF5722; } /* Deep Orange */
+        .badge-color-15 { background: #F44336; } /* Red */
+
         .scrollbar-custom {
             scrollbar-width: thin;
             scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
@@ -489,6 +506,26 @@
         let currentPage = 0;
         let draggedItemIndex = null;
 
+        // Define a palette of colors for the badges, similar to a rainbow spectrum
+        const badgeColors = [
+            '#FF69B4', // Hot Pink (for 1, similar to user's "pink")
+            '#8A2BE2', // Blue Violet (for 2, similar to user's "purple")
+            '#00BFFF', // Deep Sky Blue (for 3)
+            '#32CD32', // Lime Green (for 4)
+            '#FFD700', // Gold (for 5)
+            '#FF4500', // Orange Red (for 6)
+            '#DA70D6', // Orchid (for 7)
+            '#BA55D3', // Medium Orchid (for 8)
+            '#4682B4', // Steel Blue (for 9)
+            '#6A5ACD', // Slate Blue (for 10)
+            '#ADFF2F', // Green Yellow (for 11)
+            '#FFA07A', // Light Salmon (for 12)
+            '#20B2AA', // Light Sea Green (for 13)
+            '#DC143C', // Crimson (for 14)
+            '#800000'  // Maroon (for 15+)
+        ];
+
+
         /**
          * Loads messages from localStorage, ensuring each has copyCount and timestamp.
          */
@@ -687,14 +724,20 @@
         });
 
         /**
-         * Generates the content for the copy count badge.
+         * Generates the content and the appropriate color class for the copy count badge.
          * Uses standard numbers for clarity.
          * @param {number} count - The copy count.
-         * @returns {string} The string for the badge.
+         * @returns {object} An object containing the badge content and the CSS class.
          */
-        function getCopyBadgeContent(count) {
-            if (count <= 0) return ''; 
-            return count > 99 ? '99+' : count.toString();
+        function getCopyBadgeInfo(count) {
+            if (count <= 0) return { content: '', className: '' }; 
+            const displayCount = count > 99 ? '99+' : count.toString();
+            // Use modulo to cycle through the badgeColors array
+            const colorClassIndex = (count - 1) % badgeColors.length; // -1 to map 1 to index 0, 2 to index 1, etc.
+            return {
+                content: displayCount,
+                className: `badge-color-${colorClassIndex}`
+            };
         }
 
         /**
@@ -732,7 +775,7 @@
                 const messageName = msgObj.name;
                 const messageContent = msgObj.content;
                 const copyCount = msgObj.copyCount || 0;
-                const badgeContent = getCopyBadgeContent(copyCount);
+                const badgeInfo = getCopyBadgeInfo(copyCount); // Get badge content and class
                 
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container relative';
@@ -784,7 +827,7 @@
                         <div class="font-semibold text-gray-800 truncate text-sm">${messageName}</div>
                         <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 30 ? messageContent.substring(0, 30) + '...' : messageContent}</div>
                     </div>
-                    ${badgeContent ? `<span class="copy-count-badge">${badgeContent}</span>` : ''}
+                    ${badgeInfo.content ? `<span class="copy-count-badge ${badgeInfo.className}">${badgeInfo.content}</span>` : ''}
                 `;
                 button.title = `${messageName}\n\n${messageContent}`; 
                 button.addEventListener('click', () => {
@@ -953,7 +996,7 @@
                 const targetMessageContainer = e.target.closest('.message-container');
                 document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
                 if (targetMessageContainer && targetMessageContainer.dataset.globalId !== (messages[draggedItemIndex]?.timestamp.toString())) {
-                    targetContainer.classList.add('drag-over-target');
+                    targetMessageContainer.classList.add('drag-over-target');
                 }
             });
             zone.addEventListener('dragenter', (e) => {
