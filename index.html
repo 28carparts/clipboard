@@ -42,28 +42,13 @@
         
         .message-container {
             position: relative;
-            cursor: grab; 
+            /* Removed cursor: grab; */
         }
         
-        .message-container.dragging {
-            opacity: 0.7; 
-            border: 2px dashed #6366f1;
-            transform: scale(0.98); 
-            box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.7); 
-            transition: all 0.1s ease-out; 
-        }
+        /* Removed .message-container.dragging */
+        /* Removed .message-container.drag-over-target */
+        /* Removed .drop-zone.drag-over */
 
-        .message-container.drag-over-target {
-            box-shadow: 0 0 15px 4px rgba(255, 204, 0, 0.7); 
-            border: 2px dashed #ffcc00; 
-            transform: scale(1.02); 
-        }
-
-        .drop-zone.drag-over {
-            background: rgba(99, 102, 241, 0.1);
-            border: 2px dashed #6366f1;
-        }
-        
         .message-actions {
             position: absolute;
             top: 4px;
@@ -451,9 +436,10 @@
             <div class="lg:col-span-3 relative">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div id="messageColumn1" class="space-y-3 drop-zone min-h-[100px] p-2 rounded-xl"></div>
-                    <div id="messageColumn2" class="space-y-3 drop-zone min-h-[100px] p-2 rounded-xl"></div>
-                    <div id="messageColumn3" class="space-y-3 drop-zone min-h-[100px] p-2 rounded-xl"></div>
+                    <!-- Removed drop-zone class from columns -->
+                    <div id="messageColumn1" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
+                    <div id="messageColumn2" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
+                    <div id="messageColumn3" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
                 </div>
 
                 <div class="flex justify-center items-center mt-6 space-x-4">
@@ -504,7 +490,7 @@
         let messages = [];
         const messagesPerPage = 30; 
         let currentPage = 0;
-        let draggedItemIndex = null;
+        // Removed draggedItemIndex variable
 
         // Define a palette of colors for the badges, similar to a rainbow spectrum
         const badgeColors = [
@@ -779,53 +765,17 @@
                 
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container relative';
-                messageContainer.draggable = true; 
+                // Removed draggable attribute
                 messageContainer.dataset.globalId = msgObj.timestamp; // Use timestamp as a more stable ID for drag-drop
 
-                messageContainer.addEventListener('dragstart', (e) => {
-                    // Find the index of the item with this timestamp in the currently sorted `messages` array
-                    const idToDrag = e.target.closest('.message-container').dataset.globalId;
-                    draggedItemIndex = messages.findIndex(m => m.timestamp.toString() === idToDrag);
-                    if(draggedItemIndex === -1) {
-                        console.error("Could not find dragged item by ID:", idToDrag);
-                        e.preventDefault(); // Prevent drag if item not found
-                        return;
-                    }
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('text/plain', draggedItemIndex); 
-                    setTimeout(() => {
-                         if (document.body.contains(messageContainer)) messageContainer.classList.add('dragging');
-                    }, 0);
-                });
-
-                messageContainer.addEventListener('dragenter', (e) => {
-                    e.preventDefault();
-                    const targetContainer = e.target.closest('.message-container');
-                    if (targetContainer && targetContainer.dataset.globalId !== messageContainer.dataset.globalId) {
-                         targetContainer.classList.add('drag-over-target');
-                    }
-                });
-
-                messageContainer.addEventListener('dragleave', (e) => {
-                    const relatedTarget = e.relatedTarget;
-                    const targetContainer = e.target.closest('.message-container');
-                    if (targetContainer && (!relatedTarget || !targetContainer.contains(relatedTarget))) {
-                        targetContainer.classList.remove('drag-over-target');
-                    }
-                });
-
-                messageContainer.addEventListener('dragend', () => {
-                    if (document.body.contains(messageContainer)) messageContainer.classList.remove('dragging');
-                    document.querySelectorAll('.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
-                    draggedItemIndex = null; 
-                });
+                // Removed drag-and-drop event listeners for messageContainer
 
                 const button = document.createElement('button');
                 button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[60px] flex items-center pr-20';
                 button.innerHTML = `
                     <div class="w-full">
-                        <div class="font-semibold text-gray-800 truncate text-sm">${messageName}</div>
-                        <div class="text-xs text-gray-500 truncate mt-1">${messageContent.length > 30 ? messageContent.substring(0, 30) + '...' : messageContent}</div>
+                        <div class="font-semibold text-gray-800 truncate text-sm">${highlightKeywords(messageName, [])}</div>
+                        <div class="text-xs text-gray-500 truncate mt-1">${highlightKeywords((messageContent.length > 30 ? messageContent.substring(0, 30) + '...' : messageContent), [])}</div>
                     </div>
                     ${badgeInfo.content ? `<span class="copy-count-badge ${badgeInfo.className}">${badgeInfo.content}</span>` : ''}
                 `;
@@ -928,7 +878,7 @@
             const currentContent = currentMessage.content;
             const currentName = currentMessage.name;
             
-            container.draggable = false;
+            // Removed container.draggable = false;
             container.innerHTML = ''; 
             container.className = 'bg-white p-4 rounded-2xl border-2 border-indigo-300 shadow-lg'; 
             
@@ -987,111 +937,9 @@
             }
         }
 
-        // --- Drag and Drop Logic ---
-        const dropZones = document.querySelectorAll('.drop-zone');
-        dropZones.forEach(zone => {
-            zone.addEventListener('dragover', (e) => {
-                e.preventDefault(); 
-                e.dataTransfer.dropEffect = 'move';
-                const targetMessageContainer = e.target.closest('.message-container');
-                document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
-                if (targetMessageContainer && targetMessageContainer.dataset.globalId !== (messages[draggedItemIndex]?.timestamp.toString())) {
-                    targetMessageContainer.classList.add('drag-over-target');
-                }
-            });
-            zone.addEventListener('dragenter', (e) => {
-                e.preventDefault();
-                if (draggedItemIndex !== null) zone.classList.add('drag-over');
-            });
-            zone.addEventListener('dragleave', (e) => {
-                const relatedTarget = e.relatedTarget;
-                if (!zone.contains(relatedTarget)) {
-                    zone.classList.remove('drag-over');
-                    document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
-                }
-            });
-            zone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                zone.classList.remove('drag-over'); 
-                document.querySelectorAll('.message-container.drag-over-target').forEach(el => el.classList.remove('drag-over-target'));
-
-                if (draggedItemIndex === null || typeof messages[draggedItemIndex] === 'undefined') {
-                     console.error("Drag drop error: draggedItemIndex invalid or message undefined", draggedItemIndex);
-                     draggedItemIndex = null;
-                     return;
-                }
-
-                const draggedMessageObject = messages[draggedItemIndex];
-                messages.splice(draggedItemIndex, 1); // Remove from old position
-
-                const targetElement = e.target.closest('.message-container');
-                let newGlobalInsertIndex;
-
-                if (targetElement) {
-                    const targetId = targetElement.dataset.globalId;
-                    const actualTargetIndexInModifiedArray = messages.findIndex(m => m.timestamp.toString() === targetId);
-                    
-                    if (actualTargetIndexInModifiedArray !== -1) {
-                         newGlobalInsertIndex = actualTargetIndexInModifiedArray;
-                    } else {
-                        // Fallback: if target not found (e.g. it was the dragged item itself, which is now removed)
-                        // or if dropping into empty space. Determine by column.
-                        newGlobalInsertIndex = determineDropIndexInColumn(zone, e.clientY);
-                    }
-                } else {
-                     newGlobalInsertIndex = determineDropIndexInColumn(zone, e.clientY);
-                }
-                
-                messages.splice(newGlobalInsertIndex, 0, draggedMessageObject);
-                // Drag and drop overrides sort temporarily. The next sort in updateMessageList will re-apply copy count sort.
-                updateMessageList(); // This will re-sort by copyCount primarily
-                saveMessages();
-                draggedItemIndex = null;
-            });
-        });
-        
-        function determineDropIndexInColumn(zone, clientY) {
-            const messagesInZone = Array.from(zone.querySelectorAll('.message-container'));
-            let insertAtIndexWithinColumn = messagesInZone.length; // Default to end of column
-
-            for(let i=0; i < messagesInZone.length; i++){
-                const rect = messagesInZone[i].getBoundingClientRect();
-                if(clientY < rect.top + rect.height / 2){
-                    insertAtIndexWithinColumn = i;
-                    break;
-                }
-            }
-
-            // Find the global index of the message that will be *after* our insertion point in this column
-            let baseGlobalIndex = 0;
-            // This needs to map column position to global index in the *currently displayed (sorted) messages array*
-            // This is complex because items are distributed. For simplicity, we'll append to current page's view or specific column.
-            // A robust way is to find the global index of the last item in the column (if any) and add 1.
-            if (insertAtIndexWithinColumn < messagesInZone.length) {
-                const nextItemId = messagesInZone[insertAtIndexWithinColumn].dataset.globalId;
-                baseGlobalIndex = messages.findIndex(m => m.timestamp.toString() === nextItemId);
-                if (baseGlobalIndex === -1) baseGlobalIndex = messages.length; // Fallback
-            } else {
-                 // If appending to the end of a column, find the last item in that column on the current page
-                 // and insert after it in the global list.
-                 // This logic can be refined, for now, it might just append to the end of all messages if not precise.
-                 // A robust way is to find the global index of the last item in the column (if any) and add 1.
-                 if (messagesInZone.length > 0) {
-                    const lastItemIdInZone = messagesInZone[messagesInZone.length - 1].dataset.globalId;
-                    const lastItemGlobalIndex = messages.findIndex(m => m.timestamp.toString() === lastItemIdInZone);
-                    baseGlobalIndex = (lastItemGlobalIndex !== -1) ? lastItemGlobalIndex + 1 : messages.length;
-                 } else {
-                    // If column is empty, find the global index for the start of this column's items on current page
-                    const pageStartIndex = currentPage * messagesPerPage;
-                    let itemsBeforeThisColumn = 0;
-                    if (zone.id === 'messageColumn2') itemsBeforeThisColumn = messageColumn1.children.length;
-                    else if (zone.id === 'messageColumn3') itemsBeforeThisColumn = messageColumn1.children.length + messageColumn2.children.length;
-                    baseGlobalIndex = Math.min(messages.length, pageStartIndex + itemsBeforeThisColumn);
-                 }
-            }
-            return Math.min(messages.length, baseGlobalIndex);
-        }
-
+        // --- Removed Drag and Drop Logic ---
+        // Removed dropZones query and all its event listeners (dragover, dragenter, dragleave, drop)
+        // Removed determineDropIndexInColumn function
 
         // --- Search Logic ---
         searchInput.addEventListener('input', () => {
