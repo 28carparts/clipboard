@@ -42,13 +42,8 @@
         
         .message-container {
             position: relative;
-            /* Removed cursor: grab; */
         }
         
-        /* Removed .message-container.dragging */
-        /* Removed .message-container.drag-over-target */
-        /* Removed .drop-zone.drag-over */
-
         .message-actions {
             position: absolute;
             top: 4px;
@@ -134,6 +129,10 @@
             box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
         }
         
+        .cancel-button:hover {
+            box-shadow: 0 6px 16px rgba(107, 114, 128, 0.6); /* Enhanced hover shadow */
+        }
+
         .input-field {
             background: rgba(255, 255, 255, 0.8);
             border: 2px solid rgba(148, 163, 184, 0.2);
@@ -394,49 +393,72 @@
                     <h1 class="text-3xl title-gradient mb-2">Message Clipboard</h1>
                     <p class="text-gray-600 text-sm">Save, organize, and copy frequently</p>
                 </div>
+
+                <!-- User Authentication Section -->
+                <div id="authSection" class="flex flex-col items-center space-y-4">
+                    <form id="authForm" class="w-full max-w-sm"> <!-- Wrapped inputs in a form -->
+                        <input type="email" id="authEmail" class="input-field w-full p-3 rounded-xl focus:outline-none" placeholder="Email" autocomplete="username"/>
+                        <input type="password" id="authPassword" class="input-field w-full p-3 rounded-xl focus:outline-none mt-2" placeholder="Password" autocomplete="current-password"/>
+                        <!-- Confirm Password Field - Initially hidden -->
+                        <input type="password" id="confirmAuthPassword" class="input-field w-full p-3 rounded-xl focus:outline-none mt-2 hidden" placeholder="Confirm Password" autocomplete="new-password"/>
+                        <div class="flex justify-center space-x-3 w-full mt-4">
+                            <button type="submit" id="loginButton" class="action-button primary-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Login</button>
+                            <button type="submit" id="registerButton" class="action-button save-edit-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Register</button>
+                        </div>
+                    </form>
+                    <p id="authError" class="text-sm text-red-500 text-center"></p>
+                </div>
                 
-                <div>
-                    <div class="relative">
-                        <textarea 
-                            id="messageInput" 
-                            class="input-field w-full p-4 rounded-2xl focus:outline-none resize-none" 
-                            rows="4" 
-                            placeholder="Enter your message here... 😊🚀"
-                        ></textarea>
-                        <div class="flex justify-between items-center mt-3">
-                            <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
-                            <span id="messageCount" class="counter-badge">0 total messages</span>
+                <div id="clipboardContent" class="hidden">
+                    <div>
+                        <div class="relative">
+                            <textarea 
+                                id="messageInput" 
+                                class="input-field w-full p-4 rounded-2xl focus:outline-none resize-none" 
+                                rows="4" 
+                                placeholder="Enter your message here... 😊🚀"
+                            ></textarea>
+                            <div class="flex justify-between items-center mt-3">
+                                <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
+                                <span id="messageCount" class="counter-badge">0 total messages</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div>
-                    <button 
-                        id="saveButton" 
-                        class="action-button primary-button w-full text-white px-6 py-4 rounded-2xl font-semibold text-lg disabled:cursor-not-allowed transition-all duration-300" 
-                        disabled
-                    >
-                        💾 Save Message
-                    </button>
-                </div>
+                    
+                    <div class="mt-6"> <!-- Restored top spacing -->
+                        <button 
+                            id="saveButton" 
+                            class="action-button primary-button w-full text-white px-6 py-4 rounded-2xl font-semibold text-lg disabled:cursor-not-allowed transition-all duration-300" 
+                            disabled
+                        >
+                            💾 Save Message
+                        </button>
+                    </div>
 
-                <div class="mt-6">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        class="input-field w-full p-3 rounded-2xl focus:outline-none" 
-                        placeholder="🔍 Search messages..."
-                    />
+                    <div class="mt-6">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="input-field w-full p-3 rounded-2xl focus:outline-none" 
+                            placeholder="🔍 Search messages..."
+                        />
+                    </div>
+
+                    <!-- Logged-in Section moved here and made smaller -->
+                    <div id="loggedInSection" class="hidden flex flex-col items-center justify-center mt-6 p-2 rounded-xl border border-gray-200">
+                        <p class="text-gray-700 text-xs text-center">Logged in as: <span id="userEmail" class="font-semibold text-indigo-700"></span></p>
+                        <!-- Updated Logout Button Styling -->
+                        <button id="logoutButton" class="action-button text-white px-3 py-1.5 rounded-full font-semibold text-xs mt-2 cancel-button">Logout</button>
+                    </div>
                 </div>
                 
                 <p id="debugMessage" class="text-sm text-red-500 p-3 bg-red-50 rounded-xl hidden"></p>
             </div>
             
             <!-- Right Column: Saved Messages and Search Modal -->
-            <div class="lg:col-span-3 relative">
+            <div id="messageDisplaySection" class="lg:col-span-3 relative hidden">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Removed drop-zone class from columns -->
                     <div id="messageColumn1" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
                     <div id="messageColumn2" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
                     <div id="messageColumn3" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
@@ -467,7 +489,30 @@
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, push, set, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        // Firebase Configuration (provided by the user)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0DILWmp5gzZojL7e3NpgLuiHAXpgX1bo",
+            authDomain: "perryclipboard.firebaseapp.com",
+            databaseURL: "https://perryclipboard-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "perryclipboard",
+            storageBucket: "perryclipboard.firebasestorage.app",
+            messagingSenderId: "757683406667",
+            appId: "1:757683406667:web:c24f01c8755bfc5041cace"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUserId = null;
+        let unsubscribeFromMessages = null; // To store the unsubscribe function for onValue
+
         // Get references to HTML elements
         const messageInput = document.getElementById('messageInput');
         const saveButton = document.getElementById('saveButton');
@@ -487,10 +532,27 @@
         const nextPageButton = document.getElementById('nextPageButton');
         const pageInfo = document.getElementById('pageInfo');
 
+        // Auth UI elements
+        const authSection = document.getElementById('authSection');
+        const loggedInSection = document.getElementById('loggedInSection');
+        const authForm = document.getElementById('authForm'); // Get the form element
+        const authEmailInput = document.getElementById('authEmail');
+        const authPasswordInput = document.getElementById('authPassword');
+        // Changed from confirmAuthEmail to confirmAuthPassword
+        const confirmAuthPasswordInput = document.getElementById('confirmAuthPassword'); 
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const userEmailSpan = document.getElementById('userEmail');
+        const authErrorDisplay = document.getElementById('authError');
+
+        // Clipboard content sections
+        const clipboardContent = document.getElementById('clipboardContent');
+        const messageDisplaySection = document.getElementById('messageDisplaySection');
+
         let messages = [];
         const messagesPerPage = 30; 
         let currentPage = 0;
-        // Removed draggedItemIndex variable
 
         // Define a palette of colors for the badges, similar to a rainbow spectrum
         const badgeColors = [
@@ -511,54 +573,197 @@
             '#800000'  // Maroon (for 15+)
         ];
 
-
         /**
-         * Loads messages from localStorage, ensuring each has copyCount and timestamp.
+         * Clears authentication error message.
          */
-        function loadMessages() {
-            const storedMessages = localStorage.getItem('messages');
-            if (storedMessages) {
-                try {
-                    let parsedMessages = JSON.parse(storedMessages);
-                    if (!Array.isArray(parsedMessages)) {
-                        parsedMessages = [];
-                    }
-                    messages = parsedMessages.map((msg, index) => {
-                        const baseTimestamp = Date.now(); // Fallback timestamp base
-                        if (typeof msg === 'string') { // Handle very old format
-                            return {
-                                name: msg.substring(0, 20) + (msg.length > 20 ? '...' : ''),
-                                content: msg,
-                                timestamp: baseTimestamp - (parsedMessages.length - index) * 1000, // Ensure some uniqueness
-                                copyCount: 0
-                            };
-                        }
-                        return {
-                            ...msg,
-                            copyCount: msg.copyCount || 0,
-                            timestamp: msg.timestamp || (baseTimestamp - (parsedMessages.length - index) * 1000)
-                        };
-                    });
-                } catch (e) {
-                    console.error("Error parsing messages from localStorage:", e);
-                    messages = [];
-                }
-            }
-            updateMessageList(); // Will sort and render
-            updatePaginationControls();
-            saveButton.disabled = messageInput.value.length === 0;
+        function clearAuthError() {
+            authErrorDisplay.textContent = '';
         }
 
         /**
-         * Saves the current messages array to localStorage.
+         * Handles user registration.
          */
-        function saveMessages() {
-            try {
-                localStorage.setItem('messages', JSON.stringify(messages));
-            } catch (e) {
-                console.error("Error saving messages to localStorage:", e);
-                showNotification('Error: Could not save. Storage might be full.');
+        registerButton.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default form submission initially
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            // Changed from confirmEmail to confirmPassword
+            const confirmPassword = confirmAuthPasswordInput.value.trim();
+            clearAuthError();
+
+            // If confirm password field is hidden, show it and return
+            if (confirmAuthPasswordInput.classList.contains('hidden')) {
+                confirmAuthPasswordInput.classList.remove('hidden');
+                confirmAuthPasswordInput.focus();
+                return;
             }
+
+            if (!email || !password || !confirmPassword) {
+                authErrorDisplay.textContent = 'All fields are required.';
+                return;
+            }
+            // Changed validation from email to password
+            if (password !== confirmPassword) {
+                authErrorDisplay.textContent = 'Passwords do not match.';
+                return;
+            }
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                showNotification('Registration successful! You are now logged in.');
+            } catch (error) {
+                console.error("Registration error:", error);
+                authErrorDisplay.textContent = error.message;
+            }
+        });
+
+        /**
+         * Handles user login.
+         */
+        const handleLogin = async () => {
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            clearAuthError();
+            // Ensure confirm password field is hidden when logging in
+            confirmAuthPasswordInput.classList.add('hidden');
+            if (!email || !password) {
+                authErrorDisplay.textContent = 'Email and password cannot be empty.';
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showNotification('Logged in successfully! ✨');
+            } catch (error) {
+                console.error("Login error:", error);
+                authErrorDisplay.textContent = error.message;
+            }
+        };
+
+        // Modify login button to use form submission, but also keep its direct click handler for consistency
+        loginButton.addEventListener('click', handleLogin);
+
+        // Add form submit listener
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            // Determine if it's a login or register action based on which button was clicked
+            // This is a common pattern when you have multiple submit buttons in one form.
+            // For simplicity, we'll assume the primary action is login unless register was specifically initiated.
+            // Since we have separate click handlers, this submit listener might not be strictly necessary if those handlers call e.preventDefault()
+            // However, keeping it for robustness in case the browser triggers a generic form submit.
+            // In a real-world scenario, you might have a hidden input or check the `submitter` property of the event.
+            
+            // For now, let's just trigger login if the form is submitted by pressing Enter in an input field.
+            handleLogin();
+        });
+
+
+        /**
+         * Handles user logout.
+         */
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showNotification('Logged out successfully.');
+            } catch (error) {
+                console.error("Logout error:", error);
+                showNotification('Error logging out.');
+            }
+        });
+
+        /**
+         * Listens for Firebase authentication state changes.
+         */
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userEmailSpan.textContent = user.email;
+                authSection.classList.add('hidden');
+                loggedInSection.classList.remove('hidden');
+                clipboardContent.classList.remove('hidden');
+                messageDisplaySection.classList.remove('hidden');
+                loadMessages(); // Load messages for the logged-in user
+            } else {
+                currentUserId = null;
+                messages = []; // Clear messages when logged out
+                if (unsubscribeFromMessages) {
+                    unsubscribeFromMessages(); // Unsubscribe from previous listener
+                    unsubscribeFromMessages = null;
+                }
+                authEmailInput.value = '';
+                authPasswordInput.value = '';
+                // Clear and hide confirm password input
+                confirmAuthPasswordInput.value = ''; 
+                confirmAuthPasswordInput.classList.add('hidden'); 
+                authSection.classList.remove('hidden');
+                loggedInSection.classList.add('hidden');
+                clipboardContent.classList.add('hidden');
+                messageDisplaySection.classList.add('hidden');
+                updateMessageList(); // Clear displayed messages
+                updatePaginationControls();
+            }
+        });
+
+        /**
+         * Loads messages from Firebase Realtime Database.
+         */
+        function loadMessages() {
+            if (!currentUserId) {
+                console.log("No user logged in, cannot load messages.");
+                return;
+            }
+
+            // Unsubscribe from any previous listener to avoid multiple listeners
+            if (unsubscribeFromMessages) {
+                unsubscribeFromMessages();
+            }
+
+            const userMessagesRef = ref(db, `users/${currentUserId}/messages`);
+            unsubscribeFromMessages = onValue(userMessagesRef, (snapshot) => {
+                messages = []; // Clear current messages
+                snapshot.forEach((childSnapshot) => {
+                    const messageData = childSnapshot.val();
+                    messages.push({
+                        id: childSnapshot.key, // Firebase unique key
+                        name: messageData.name,
+                        content: messageData.content,
+                        timestamp: messageData.timestamp,
+                        copyCount: messageData.copyCount || 0
+                    });
+                });
+                updateMessageList(); // Sort and render
+                updatePaginationControls();
+                saveButton.disabled = messageInput.value.length === 0;
+            }, (error) => {
+                console.error("Error loading messages from Firebase:", error);
+                showNotification('Error loading messages.');
+            });
+        }
+
+        /**
+         * Saves the current messages array to Firebase Realtime Database.
+         * For new messages, this is called after the name input modal confirms.
+         * For updates, directly updates the specific message.
+         */
+        function saveMessageToFirebase(messageObj) {
+            if (!currentUserId) {
+                showNotification('Please log in to save messages.');
+                return;
+            }
+
+            const messageRef = ref(db, `users/${currentUserId}/messages/${messageObj.id}`);
+            set(messageRef, {
+                name: messageObj.name,
+                content: messageObj.content,
+                timestamp: messageObj.timestamp,
+                copyCount: messageObj.copyCount
+            })
+            .then(() => {
+                // Message list will be updated by the onValue listener, no need to call updateMessageList here
+                // showNotification('Message saved successfully! ✨'); // Notification moved to showNameInputModal
+            })
+            .catch((error) => {
+                console.error("Error saving message to Firebase:", error);
+                showNotification('Error: Could not save message to Firebase.');
+            });
         }
 
         /**
@@ -636,22 +841,33 @@
             saveBtn.addEventListener('click', () => {
                 const name = nameInput.value.trim();
                 if (name) {
+                    if (!currentUserId) {
+                        showNotification('Please log in to save messages.');
+                        if (document.body.contains(overlay)) overlay.remove();
+                        return;
+                    }
+                    const newMessageRef = push(ref(db, `users/${currentUserId}/messages`)); // Get a new unique key
                     const messageObj = {
+                        id: newMessageRef.key, // Store the Firebase generated key
                         name: name,
                         content: messageText,
                         timestamp: Date.now(),
-                        copyCount: 0 // Initialize copyCount
+                        copyCount: 0 
                     };
-                    messages.push(messageObj);
-                    currentPage = Math.floor((messages.length - 1) / messagesPerPage); // Go to new message's page
-                    updateMessageList();
-                    saveMessages();
-                    messageInput.value = '';
-                    charCount.textContent = `0 characters`;
-                    saveButton.disabled = true;
-                    showNotification('Message saved successfully! ✨');
-                    if (document.body.contains(overlay)) overlay.remove();
-                    updatePaginationControls();
+                    set(newMessageRef, messageObj) // Save to Firebase
+                    .then(() => {
+                        // The onValue listener will automatically update the `messages` array and UI
+                        messageInput.value = '';
+                        charCount.textContent = `0 characters`;
+                        saveButton.disabled = true;
+                        showNotification('Message saved successfully! ✨');
+                        if (document.body.contains(overlay)) overlay.remove();
+                    })
+                    .catch((error) => {
+                        console.error("Error adding message to Firebase:", error);
+                        showNotification('Error saving message.');
+                        if (document.body.contains(overlay)) overlay.remove();
+                    });
                 } else {
                     nameInput.focus();
                     nameInput.style.borderColor = '#ef4444';
@@ -667,7 +883,7 @@
         /**
          * Shows a confirmation modal before deleting a message.
          */
-        function showWarningMessage(globalIndex) {
+        function showWarningMessage(messageId, messageName) {
             const existingOverlay = document.querySelector('.modal-overlay');
             if (existingOverlay) existingOverlay.remove();
             
@@ -675,7 +891,6 @@
             overlay.className = 'modal-overlay fixed inset-0 flex items-center justify-center z-50';
             const modal = document.createElement('div');
             modal.className = 'modal-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-3xl p-8 max-w-sm w-full mx-4 text-center';
-            const messageName = messages[globalIndex] && messages[globalIndex].name ? messages[globalIndex].name : 'this message';
             modal.innerHTML = `
                 <div class="mb-6">
                     <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center"><span class="text-2xl">🗑️</span></div>
@@ -690,12 +905,12 @@
             document.body.appendChild(overlay);
 
             modal.querySelector('.delete-button').addEventListener('click', () => {
-                deleteMessage(globalIndex);
+                deleteMessage(messageId);
                 if (document.body.contains(overlay)) overlay.remove();
                 showNotification('Message deleted successfully!');
             });
             modal.querySelector('.cancel-button').addEventListener('click', () => { if (document.body.contains(overlay)) overlay.remove(); });
-            overlay.addEventListener('click', (e) => { if (e.target === overlay && document.body.contains(overlay)) overlay.remove(); });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay && document.body.contains(overlay)) closeSearchResults(); });
         }
         
         messageInput.addEventListener('input', () => {
@@ -749,26 +964,20 @@
             const messagesToDisplay = messages.slice(startIdx, endIdx);
 
             messagesToDisplay.forEach((msgObj, localIndex) => { 
-                const globalIndex = messages.indexOf(msgObj); // Get current global index after sort
-
                 // Ensure msgObj is well-formed
                 if (!msgObj || typeof msgObj.name === 'undefined' || typeof msgObj.content === 'undefined') {
                     console.warn("Malformed message object during render:", msgObj);
-                    messages[globalIndex] = { name: "Error: Invalid Data", content: "", timestamp: Date.now(), copyCount: 0 };
-                    msgObj = messages[globalIndex];
+                    return; // Skip rendering malformed message
                 }
 
                 const messageName = msgObj.name;
                 const messageContent = msgObj.content;
                 const copyCount = msgObj.copyCount || 0;
-                const badgeInfo = getCopyBadgeInfo(copyCount); // Get badge content and class
+                const badgeInfo = getCopyBadgeInfo(copyCount); 
                 
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container relative';
-                // Removed draggable attribute
-                messageContainer.dataset.globalId = msgObj.timestamp; // Use timestamp as a more stable ID for drag-drop
-
-                // Removed drag-and-drop event listeners for messageContainer
+                messageContainer.dataset.messageId = msgObj.id; // Store Firebase ID
 
                 const button = document.createElement('button');
                 button.className = 'message-button w-full text-left p-3 rounded-xl relative font-medium min-h-[60px] flex items-center pr-20';
@@ -791,21 +1000,14 @@
                 editButton.textContent = 'Edit';
                 editButton.addEventListener('click', (e) => {
                     e.stopPropagation(); 
-                    // Find current global index for editing, as it might have changed due to sorting
-                    const currentGlobalIndex = messages.findIndex(m => m.timestamp === msgObj.timestamp);
-                    if (currentGlobalIndex !== -1) {
-                        editMessage(currentGlobalIndex, messageContainer);
-                    }
+                    editMessage(msgObj.id, msgObj, messageContainer); // Pass message ID and object
                 });
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'delete-button action-button text-white px-2 py-1 rounded-lg font-medium text-xs';
                 deleteButton.textContent = 'Del';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation(); 
-                    const currentGlobalIndex = messages.findIndex(m => m.timestamp === msgObj.timestamp);
-                     if (currentGlobalIndex !== -1) {
-                        showWarningMessage(currentGlobalIndex);
-                    }
+                    showWarningMessage(msgObj.id, msgObj.name); // Pass message ID and name for warning
                 });
                 actionsContainer.appendChild(editButton);
                 actionsContainer.appendChild(deleteButton);
@@ -821,7 +1023,7 @@
         }
 
         /**
-         * Copies text, increments count, saves, and re-renders.
+         * Copies text, increments count in Firebase, and triggers re-render via listener.
          * @param {object} messageObjectToCopy - The message object.
          * @param {HTMLElement} buttonElement - The button clicked.
          */
@@ -841,15 +1043,14 @@
                     if (!successful) throw new Error('Fallback copy command failed');
                 }
                 
-                // Increment copy count
-                const originalMessageIndex = messages.findIndex(m => m.timestamp === messageObjectToCopy.timestamp);
-                if (originalMessageIndex !== -1) {
-                    messages[originalMessageIndex].copyCount = (messages[originalMessageIndex].copyCount || 0) + 1;
-                    saveMessages();
-                    updateMessageList(); // Re-sort and re-render
+                if (currentUserId && messageObjectToCopy.id) {
+                    const messageRef = ref(db, `users/${currentUserId}/messages/${messageObjectToCopy.id}`);
+                    const newCopyCount = (messageObjectToCopy.copyCount || 0) + 1;
+                    await update(messageRef, { copyCount: newCopyCount });
                     showNotification('Message copied! Count updated. ✨');
+                    // updateMessageList will be called by the onValue listener
                 } else {
-                     showNotification('Message copied! (Original not found for count update)');
+                     showNotification('Message copied! (Count not updated - not logged in or invalid message ID)');
                 }
 
             } catch (err) {
@@ -865,20 +1066,20 @@
         }
 
         /**
-         * Enables editing of an existing message.
-         * @param {number} globalIndex - The current global index of the message in the sorted `messages` array.
+         * Enables editing of an existing message in Firebase.
+         * @param {string} messageId - The Firebase ID of the message.
+         * @param {object} currentMessage - The current message object.
          * @param {HTMLElement} container - The HTML container of the message.
          */
-        function editMessage(globalIndex, container) {
-            const currentMessage = messages[globalIndex];
-            if (!currentMessage) {
-                console.error("Message to edit not found at index:", globalIndex);
+        function editMessage(messageId, currentMessage, container) {
+            if (!currentUserId || !messageId) {
+                showNotification('Cannot edit. Not logged in or invalid message.');
                 return;
             }
+            
             const currentContent = currentMessage.content;
             const currentName = currentMessage.name;
             
-            // Removed container.draggable = false;
             container.innerHTML = ''; 
             container.className = 'bg-white p-4 rounded-2xl border-2 border-indigo-300 shadow-lg'; 
             
@@ -894,16 +1095,22 @@
             const saveEditButton = document.createElement('button');
             saveEditButton.className = 'save-edit-button action-button text-white px-3 py-1.5 rounded-lg font-medium text-xs flex-1';
             saveEditButton.textContent = '💾 Save';
-            saveEditButton.addEventListener('click', () => {
+            saveEditButton.addEventListener('click', async () => {
                 const newName = nameInput.value.trim();
                 const newContent = contentInput.value.trim();
                 if (newName && newContent) {
-                    messages[globalIndex].name = newName;
-                    messages[globalIndex].content = newContent;
-                    // Note: timestamp and copyCount are preserved
-                    updateMessageList(); 
-                    saveMessages(); 
-                    showNotification('Message updated! ✨'); 
+                    const messageToUpdateRef = ref(db, `users/${currentUserId}/messages/${messageId}`);
+                    try {
+                        await update(messageToUpdateRef, {
+                            name: newName,
+                            content: newContent
+                        });
+                        showNotification('Message updated! ✨'); 
+                        // The onValue listener will handle re-rendering
+                    } catch (error) {
+                        console.error("Error updating message in Firebase:", error);
+                        showNotification('Error updating message.');
+                    }
                 } else {
                     showNotification('Name and message cannot be empty.'); 
                 }
@@ -918,46 +1125,43 @@
         }
 
         /**
-         * Deletes a message and updates UI.
-         * @param {number} globalIndex - The current global index of the message.
+         * Deletes a message from Firebase and updates UI.
+         * @param {string} messageId - The Firebase ID of the message to delete.
          */
-        function deleteMessage(globalIndex) {
-            if (globalIndex >= 0 && globalIndex < messages.length) {
-                messages.splice(globalIndex, 1); 
-                const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
+        async function deleteMessage(messageId) {
+            if (!currentUserId || !messageId) {
+                showNotification('Cannot delete. Not logged in or invalid message.');
+                return;
+            }
+            try {
+                const messageToDeleteRef = ref(db, `users/${currentUserId}/messages/${messageId}`);
+                await remove(messageToDeleteRef);
+                // The onValue listener will automatically update the `messages` array and UI
+                const totalPages = Math.max(1, Math.ceil((messages.length - 1) / messagesPerPage));
                 if (currentPage >= totalPages && currentPage > 0) {
                     currentPage = totalPages - 1;
                 }
-                updateMessageList(); 
-                saveMessages(); 
-                updatePaginationControls(); 
+                updatePaginationControls(); // Update pagination after deletion
                 saveButton.disabled = messageInput.value.length === 0;
-            } else {
-                console.error("Invalid index for delete:", globalIndex);
+            } catch (error) {
+                console.error("Error deleting message from Firebase:", error);
+                showNotification('Error deleting message.');
             }
         }
-
-        // --- Removed Drag and Drop Logic ---
-        // Removed dropZones query and all its event listeners (dragover, dragenter, dragleave, drop)
-        // Removed determineDropIndexInColumn function
 
         // --- Search Logic ---
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm.length > 0) {
-                // Split the search term into individual keywords
                 const keywords = searchTerm.split(' ').filter(word => word.length > 0);
-
                 const filteredMessages = messages.filter(msg => {
                     const messageNameLower = (msg.name || '').toLowerCase();
                     const messageContentLower = (msg.content || '').toLowerCase();
-
-                    // Check if ALL keywords are present in either the name or the content
                     return keywords.every(keyword => 
                         messageNameLower.includes(keyword) || messageContentLower.includes(keyword)
                     );
                 });
-                displaySearchResults(filteredMessages, keywords); // Pass keywords for highlighting
+                displaySearchResults(filteredMessages, keywords);
             } else {
                 closeSearchResults(); 
             }
@@ -975,20 +1179,19 @@
         function highlightKeywords(text, keywords) {
             let highlightedText = text;
             keywords.forEach(keyword => {
-                const regex = new RegExp(`(${keyword})`, 'gi'); // Case-insensitive global search
+                const regex = new RegExp(`(${keyword})`, 'gi'); 
                 highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
             });
             return highlightedText;
         }
 
-        function displaySearchResults(results, keywords = []) { // Added keywords parameter
+        function displaySearchResults(results, keywords = []) { 
             searchResultsList.innerHTML = ''; 
             noSearchResults.classList.toggle('hidden', results.length > 0);
             results.forEach(msg => {
                 const resultItem = document.createElement('div');
                 resultItem.className = 'search-result-item';
 
-                // Apply highlighting to name and content
                 const highlightedName = highlightKeywords(msg.name || 'Untitled', keywords);
                 const highlightedContent = highlightKeywords((msg.content || '').substring(0,100), keywords);
 
@@ -996,8 +1199,7 @@
                     <div class="search-result-name">${highlightedName}</div>
                     <div class="search-result-content">${highlightedContent}${(msg.content && msg.content.length > 100) ? '...' : ''}</div>`;
                 resultItem.addEventListener('click', () => {
-                    copyToClipboard(msg, resultItem); // msg is the full message object
-                    // No need to call showNotification here, copyToClipboard does it.
+                    copyToClipboard(msg, resultItem); 
                     closeSearchResults();
                 });
                 searchResultsList.appendChild(resultItem);
@@ -1027,7 +1229,7 @@
             if (currentPage < totalPages - 1) { currentPage++; updateMessageList(); }
         });
 
-        loadMessages(); // Initialize
+        // Initial setup handled by onAuthStateChanged
     </script>
 </body>
 </html>
