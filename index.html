@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Clipboard</title>
+    <!-- Favicon link - Placeholder -->
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass-card p-8 rounded-3xl w-full" style="max-width: 1680px;">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left Column: Input and Controls -->
+            <div class="space-y-6">
+                <div class="text-center">
+                    <h1 class="text-3xl title-gradient mb-2">Message Clipboard</h1>
+                    <p class="text-gray-600 text-sm">Save, organize, and copy frequently</p>
+                </div>
+
+                <!-- User Authentication Section -->
+                <div id="authSection" class="flex flex-col items-center space-y-4">
+                    <form id="authForm" class="w-full max-w-sm"> <!-- Wrapped inputs in a form -->
+                        <input type="email" id="authEmail" class="input-field w-full p-3 rounded-xl focus:outline-none" placeholder="Email" autocomplete="username"/>
+                        <input type="password" id="authPassword" class="input-field w-full p-3 rounded-xl focus:outline-none mt-2" placeholder="Password" autocomplete="current-password"/>
+                        <!-- Confirm Password Field - Initially hidden -->
+                        <input type="password" id="confirmAuthPassword" class="input-field w-full p-3 rounded-xl focus:outline-none mt-2 hidden" placeholder="Confirm Password" autocomplete="new-password"/>
+                        <div class="flex justify-center space-x-3 w-full mt-4">
+                            <button type="submit" id="loginButton" class="action-button primary-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Login</button>
+                            <button type="submit" id="registerButton" class="action-button save-edit-button flex-1 text-white px-4 py-3 rounded-xl font-medium">Register</button>
+                        </div>
+                    </form>
+                    <p id="authError" class="text-sm text-red-500 text-center"></p>
+                </div>
+                
+                <div id="clipboardContent" class="hidden">
+                    <div>
+                        <div class="relative">
+                            <textarea 
+                                id="messageInput" 
+                                class="input-field w-full p-4 rounded-2xl focus:outline-none resize-none" 
+                                rows="4" 
+                                placeholder="Enter your message here... 😊🚀"
+                            ></textarea>
+                            <div class="flex justify-between items-center mt-3">
+                                <span id="charCount" class="text-sm text-gray-500 font-medium">0 characters</span>
+                                <span id="messageCount" class="counter-badge">0 total messages</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6"> <!-- Restored top spacing -->
+                        <button 
+                            id="saveButton" 
+                            class="action-button primary-button w-full text-white px-6 py-4 rounded-2xl font-semibold text-lg disabled:cursor-not-allowed transition-all duration-300" 
+                            disabled
+                        >
+                            💾 Save Message
+                        </button>
+                    </div>
+
+                    <div class="mt-6">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="input-field w-full p-3 rounded-2xl focus:outline-none" 
+                            placeholder="🔍 Search messages..."
+                        />
+                    </div>
+
+                    <!-- Logged-in Section moved here and made smaller -->
+                    <div id="loggedInSection" class="hidden flex flex-col items-center justify-center mt-6 p-2 rounded-xl border border-gray-200">
+                        <p class="text-gray-700 text-xs text-center">Logged in as: <span id="userEmail" class="font-semibold text-indigo-700"></span></p>
+                        <!-- Updated Logout Button Styling -->
+                        <button id="logoutButton" class="action-button text-white px-3 py-1.5 rounded-full font-semibold text-xs mt-2 cancel-button">Logout</button>
+                    </div>
+                </div>
+                
+                <p id="debugMessage" class="text-sm text-red-500 p-3 bg-red-50 rounded-xl hidden"></p>
+            </div>
+            
+            <!-- Right Column: Saved Messages and Search Modal -->
+            <div id="messageDisplaySection" class="lg:col-span-3 relative hidden">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Saved Messages</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div id="messageColumn1" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
+                    <div id="messageColumn2" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
+                    <div id="messageColumn3" class="space-y-3 min-h-[100px] p-2 rounded-xl"></div>
+                </div>
+
+                <div class="flex justify-center items-center mt-6 space-x-4">
+                    <button id="prevPageButton" class="action-button primary-button px-4 py-2 rounded-xl font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        &larr; Previous
+                    </button>
+                    <span id="pageInfo" class="text-gray-700 font-semibold">Page 1 of 1</span>
+                    <button id="nextPageButton" class="action-button primary-button px-4 py-2 rounded-xl font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next &rarr;
+                    </button>
+                </div>
+
+                <!-- Search Results Modal -->
+                <div id="searchResultsModal" class="search-results-modal">
+                    <div class="search-results-content scrollbar-custom">
+                        <button id="searchCloseButton" class="search-close-button">✕</button>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Search Results</h3>
+                        <div id="searchResultsList" class="space-y-3">
+                            <!-- Search results will be populated here by JavaScript -->
+                        </div>
+                        <p id="noSearchResults" class="text-center text-gray-500 mt-4 hidden">No results found.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs and custom script -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>

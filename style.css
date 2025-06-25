@@ -1,0 +1,461 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+}
+
+.message-button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    position: relative; /* Needed for absolute positioning of copy count badge */
+}
+
+.message-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.message-container {
+    position: relative;
+}
+
+.message-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.message-container:hover .message-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-button {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+}
+
+.action-button:hover::before {
+    left: 100%;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    color: white; 
+}
+
+.primary-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+}
+
+.primary-button:disabled {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    box-shadow: none;
+    transform: none;
+}
+
+.edit-button {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.edit-button:hover {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+    transform: translateY(-1px);
+}
+
+.delete-button {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.delete-button:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+    transform: translateY(-1px);
+}
+
+.save-edit-button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.cancel-button {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+}
+
+.cancel-button:hover {
+    box-shadow: 0 6px 16px rgba(107, 114, 128, 0.6); /* Enhanced hover shadow */
+}
+
+.input-field {
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.input-field:focus {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.copy-failed::after {
+    content: 'Copy Failed! ❌';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ef4444;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: 8px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-50%) translateX(-10px); }
+    to { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.floating-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    animation: notificationSlide 0.4s ease;
+    z-index: 1001;
+    font-weight: 500;
+}
+
+@keyframes notificationSlide {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.counter-badge {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.copy-count-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    color: white;
+    font-size: 12px; 
+    font-weight: 600;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    z-index: 5;
+    line-height: 22px; /* Helps vertically center content */
+}
+
+/* Specific color classes for badges - 100 visually appealing, distinct colors from the provided image, randomized */
+.badge-color-0 { background: #F8CBAD; } /* light orange */
+.badge-color-1 { background: #96CF90; } /* light green */
+.badge-color-2 { background: #64C8A0; } /* teal */
+.badge-color-3 { background: #C850A0; } /* magenta */
+.badge-color-4 { background: #F89650; } /* bright orange */
+.badge-color-5 { background: #96E146; } /* bright green */
+.badge-color-6 { background: #C89664; } /* tan */
+.badge-color-7 { background: #E14650; } /* brick red */
+.badge-color-8 { background: #64E1B4; } /* seafoam green */
+.badge-color-9 { background: #E1E146; } /* yellow */
+.badge-color-10 { background: #50A0C8; } /* cerulean */
+.badge-color-11 { background: #828282; } /* medium grey */
+.badge-color-12 { background: #AD50C8; } /* purple */
+.badge-color-13 { background: #96ADF8; } /* light blue */
+.badge-color-14 { background: #F86450; } /* orange-red */
+.badge-color-15 { background: #F85064; } /* coral */
+.badge-color-16 { background: #ADF8E1; } /* pale mint */
+.badge-color-17 { background: #46C8E1; } /* bright sky blue */
+.badge-color-18 { background: #4650E1; } /* dark blue */
+.badge-color-19 { background: #ADF896; } /* pastel green */
+.badge-color-20 { background: #96ADF8; } /* periwinkle */
+.badge-color-21 { background: #C8F850; } /* lime yellow */
+.badge-color-22 { background: #C850F8; } /* bright purple */
+.badge-color-23 { background: #6450F8; } /* dark violet */
+.badge-color-24 { background: #46E1E1; } /* bright cyan */
+.badge-color-25 { background: #F86496; } /* salmon */
+.badge-color-26 { background: #4696E1; } /* cobalt blue */
+.badge-color-27 { background: #F8E150; } /* gold */
+.badge-color-28 { background: #9664E1; } /* medium purple */
+.badge-color-29 { background: #C8ADF8; } /* very light purple */
+.badge-color-30 { background: #64F8AD; } /* jade green */
+.badge-color-31 { background: #ADF850; } /* bright lime */
+.badge-color-32 { background: #C8F896; } /* pale chartreuse */
+.badge-color-33 { background: #ADF8AD; } /* pastel green */
+.badge-color-34 { background: #46ADF8; } /* strong blue */
+.badge-color-35 { background: #50C8F8; } /* light blue */
+.badge-color-36 { background: #64E1F8; } /* light teal */
+.badge-color-37 { background: #9664F8; } /* deep purple */
+.badge-color-38 { background: #AD50F8; } /* vibrant purple */
+.badge-color-39 { background: #C8ADF8; } /* light pastel purple */
+.badge-color-40 { background: #E164F8; } /* bright magenta */
+.badge-color-41 { background: #F8AD96; } /* warm pink */
+.badge-color-42 { background: #AD96F8; } /* lavender blue */
+.badge-color-43 { background: #ADF864; } /* grass green */
+.badge-color-44 { background: #F8AD50; } /* muted orange */
+.badge-color-45 { background: #C864F8; } /* dark orchid */
+.badge-color-46 { background: #46ADF8; } /* dark aqua */
+.badge-color-47 { background: #F896AD; } /* rose */
+.badge-color-48 { background: #96F8E1; } /* light aqua */
+.badge-color-49 { background: #F8C864; } /* light gold */
+.badge-color-50 { background: #E1AD96; } /* dusty rose */
+.badge-color-51 { background: #50F8C8; } /* bright turquoise */
+.badge-color-52 { background: #64F8E1; } /* bright light blue */
+.badge-color-53 { background: #96F8C8; } /* mint */
+.badge-color-54 { background: #96ADF8; } /* soft blue */
+.badge-color-55 { background: #C8ADAD; } /* light grey-pink */
+.badge-color-56 { background: #E1AD50; } /* brownish orange */
+.badge-color-57 { background: #E1E1AD; } /* pale yellow */
+.badge-color-58 { background: #F8AD64; } /* reddish orange */
+.badge-color-59 { background: #AD96AD; } /* light purple-grey */
+.badge-color-60 { background: #F8C8AD; } /* pale salmon */
+.badge-color-61 { background: #F89696; } /* light red */
+.badge-color-62 { background: #ADADF8; } /* light purple */
+.badge-color-63 { background: #ADF8C8; } /* pale green */
+.badge-color-64 { background: #E1C8AD; } /* peach */
+.badge-color-65 { background: #96E1AD; } /* soft green */
+.badge-color-66 { background: #50E1F8; } /* very light blue */
+.badge-color-67 { background: #E164AD; } /* light crimson */
+.badge-color-68 { background: #AD5096; } /* muted purple */
+.badge-color-69 { background: #C896F8; } /* violet */
+.badge-color-70 { background: #AD9664; } /* brownish tan */
+.badge-color-71 { background: #F8ADAD; } /* light pink */
+.badge-color-72 { background: #E1C8E1; } /* light lavender */
+.badge-color-73 { background: #E196F8; } /* pastel magenta */
+.badge-color-74 { background: #AD64F8; } /* deep violet */
+.badge-color-75 { background: #ADF8E1; } /* light teal */
+.badge-color-76 { background: #96ADAD; } /* greyish green */
+.badge-color-77 { background: #64AD96; } /* forest green */
+.badge-color-78 { background: #F8E1C8; } /* cream */
+.badge-color-79 { background: #E196AD; } /* soft red */
+.badge-color-80 { background: #96C8E1; } /* dusty blue */
+.badge-color-81 { background: #F8C896; } /* light brown */
+.badge-color-82 { background: #C896E1; } /* pale violet */
+.badge-color-83 { background: #64F896; } /* bright pastel green */
+.badge-color-84 { background: #F896AD; } /* bright rose */
+.badge-color-85 { background: #E1ADF8; } /* vibrant orchid */
+.badge-color-86 { background: #AD64C8; } /* deep purple */
+.badge-color-87 { background: #96C8F8; } /* light cerulean */
+.badge-color-88 { background: #F8ADAD; } /* light rose */
+.badge-color-89 { background: #C8F8AD; } /* pale lime green */
+.badge-color-90 { background: #64F8C8; } /* turquoise green */
+.badge-color-91 { background: #E1F8C8; } /* light pistachio */
+.badge-color-92 { background: #ADF8AD; } /* pale mint green */
+.badge-color-93 { background: #E164C8; } /* medium magenta */
+.badge-color-94 { background: #ADAD64; } /* muted yellow-green */
+.badge-color-95 { background: #64ADAD; } /* dusty teal */
+.badge-color-96 { background: #F8E196; } /* light yellowish orange */
+.badge-color-97 { background: #9696E1; } /* lavender */
+.badge-color-98 { background: #C8AD64; } /* golden brown */
+.badge-color-99 { background: #AD6496; } /* dusty purple */
+
+.scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 3px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+}
+
+.title-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.search-results-modal {
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    border-radius: 1.5rem; 
+}
+
+.search-results-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.search-results-content {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 1.5rem; 
+    padding: 2rem;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.search-results-modal.active .search-results-content {
+    transform: translateY(0);
+}
+
+.search-result-item {
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.search-result-item:last-child {
+    margin-bottom: 0;
+}
+
+.search-result-name {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.25rem;
+}
+
+.search-result-content {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+/* Highlight style */
+.highlight {
+    background-color: #fef08a; /* Tailwind yellow-200 */
+    padding: 2px 0;
+    border-radius: 3px;
+}
+
+.search-close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.search-close-button:hover {
+    background: #dc2626;
+}
+@keyframes notificationSlideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
