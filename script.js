@@ -1,7 +1,4 @@
-// Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, push, set, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+// You can directly access firebase, firebase.auth(), firebase.database() etc.
 
 // Firebase Configuration (provided by the user)
 const firebaseConfig = {
@@ -15,9 +12,10 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+// Use firebase.initializeApp() directly as the SDKs are now globally available
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth(); // Access auth service
+const db = firebase.database(); // Access database service
 let currentUserId = null;
 let unsubscribeFromMessages = null; // To store the unsubscribe function for onValue
 
@@ -113,7 +111,8 @@ registerButton.addEventListener('click', async (e) => {
         return;
     }
     try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        // Use firebase.auth().createUserWithEmailAndPassword()
+        await auth.createUserWithEmailAndPassword(email, password);
         showNotification('Registration successful! You are now logged in.');
     } catch (error) {
         console.error("Registration error:", error); // Log full error object
@@ -135,7 +134,8 @@ const handleLogin = async () => {
         return;
     }
     try {
-        await signInWithEmailAndPassword(auth, email, password);
+        // Use firebase.auth().signInWithEmailAndPassword()
+        await auth.signInWithEmailAndPassword(email, password);
         showNotification('Logged in successfully! ✨');
     } catch (error) {
         console.error("Login error:", error); // Log full error object
@@ -159,7 +159,8 @@ authForm.addEventListener('submit', async (e) => {
  */
 logoutButton.addEventListener('click', async () => {
     try {
-        await signOut(auth);
+        // Use firebase.auth().signOut()
+        await auth.signOut();
         showNotification('Logged out successfully.');
     } catch (error) {
         console.error("Logout error:", error);
@@ -170,7 +171,8 @@ logoutButton.addEventListener('click', async () => {
 /**
  * Listens for Firebase authentication state changes.
  */
-onAuthStateChanged(auth, (user) => {
+// Use firebase.auth().onAuthStateChanged()
+auth.onAuthStateChanged((user) => {
     if (user) {
         currentUserId = user.uid;
         userEmailSpan.textContent = user.email;
@@ -217,8 +219,9 @@ function loadMessages() {
         unsubscribeFromMessages();
     }
 
-    const userMessagesRef = ref(db, `users/${currentUserId}/messages`);
-    unsubscribeFromMessages = onValue(userMessagesRef, (snapshot) => {
+    // Use firebase.database().ref() and .on()
+    const userMessagesRef = db.ref(`users/${currentUserId}/messages`);
+    unsubscribeFromMessages = userMessagesRef.on('value', (snapshot) => {
         messages = []; // Clear current messages
         snapshot.forEach((childSnapshot) => {
             const messageData = childSnapshot.val();
@@ -250,8 +253,9 @@ function saveMessageToFirebase(messageObj) {
         return;
     }
 
-    const messageRef = ref(db, `users/${currentUserId}/messages/${messageObj.id}`);
-    set(messageRef, {
+    // Use firebase.database().ref() and .set()
+    const messageRef = db.ref(`users/${currentUserId}/messages/${messageObj.id}`);
+    messageRef.set({
         name: messageObj.name,
         content: messageObj.content,
         timestamp: messageObj.timestamp,
@@ -335,7 +339,8 @@ function showNameInputModal(messageText) {
                 if (document.body.contains(overlay)) overlay.remove();
                 return;
             }
-            const newMessageRef = push(ref(db, `users/${currentUserId}/messages`)); // Get a new unique key
+            // Use db.ref().push()
+            const newMessageRef = db.ref(`users/${currentUserId}/messages`).push(); // Get a new unique key
             const messageObj = {
                 id: newMessageRef.key, // Store the Firebase generated key
                 name: name,
@@ -343,7 +348,7 @@ function showNameInputModal(messageText) {
                 timestamp: Date.now(),
                 copyCount: 0
             };
-            set(newMessageRef, messageObj) // Save to Firebase
+            newMessageRef.set(messageObj) // Save to Firebase
             .then(() => {
                 // The onValue listener will automatically update the `messages` array and UI
                 messageInput.value = '';
@@ -533,9 +538,10 @@ async function copyToClipboard(messageObjectToCopy, buttonElement) {
         }
         
         if (currentUserId && messageObjectToCopy.id) {
-            const messageRef = ref(db, `users/${currentUserId}/messages/${messageObjectToCopy.id}`);
+            // Use firebase.database().ref().update()
+            const messageRef = db.ref(`users/${currentUserId}/messages/${messageObjectToCopy.id}`);
             const newCopyCount = (messageObjectToCopy.copyCount || 0) + 1;
-            await update(messageRef, { copyCount: newCopyCount });
+            await messageRef.update({ copyCount: newCopyCount });
             showNotification('Message copied! Count updated. ✨');
             // updateMessageList will be called by the onValue listener
         } else {
@@ -588,9 +594,10 @@ function editMessage(messageId, currentMessage, container) {
         const newName = nameInput.value.trim();
         const newContent = contentInput.value.trim();
         if (newName && newContent) {
-            const messageToUpdateRef = ref(db, `users/${currentUserId}/messages/${messageId}`);
+            // Use firebase.database().ref().update()
+            const messageToUpdateRef = db.ref(`users/${currentUserId}/messages/${messageId}`);
             try {
-                await update(messageToUpdateRef, {
+                await messageToUpdateRef.update({
                     name: newName,
                     content: newContent
                 });
@@ -623,8 +630,9 @@ async function deleteMessage(messageId) {
         return;
     }
     try {
-        const messageToDeleteRef = ref(db, `users/${currentUserId}/messages/${messageId}`);
-        await remove(messageToDeleteRef);
+        // Use firebase.database().ref().remove()
+        const messageToDeleteRef = db.ref(`users/${currentUserId}/messages/${messageId}`);
+        await messageToDeleteRef.remove();
         // The onValue listener will automatically update the `messages` array and UI
         const totalPages = Math.max(1, Math.ceil((messages.length - 1) / messagesPerPage));
         if (currentPage >= totalPages && currentPage > 0) {
